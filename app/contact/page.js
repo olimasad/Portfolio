@@ -1,11 +1,33 @@
+import { headers } from "next/headers";
+
 export const metadata = {
   title: "Contact - Oliver Massaad",
 };
 
+function getRequestBaseUrl(headerStore) {
+  const host = headerStore.get("x-forwarded-host") || headerStore.get("host");
+  const proto = headerStore.get("x-forwarded-proto") || "https";
+  if (!host) {
+    return "https://www.oliverms.com";
+  }
+  return `${proto}://${host}`;
+}
+
 export default async function ContactPage({ searchParams }) {
   const params = await searchParams;
+  const headerStore = await headers();
   const sent = params?.sent === "1";
-  const hasError = Boolean(params?.error);
+  const error = params?.error;
+  const hasError = Boolean(error);
+
+  const contactTo = process.env.CONTACT_TO_EMAIL || "olimasad@gmail.com";
+  const hasManagedEmail = Boolean(
+    process.env.RESEND_API_KEY || (process.env.SMTP_USERNAME && process.env.SMTP_PASSWORD)
+  );
+  const formAction = hasManagedEmail
+    ? "/api/contact"
+    : `https://formsubmit.co/${contactTo}`;
+  const successUrl = `${getRequestBaseUrl(headerStore)}/contact?sent=1`;
 
   return (
     <>
@@ -64,7 +86,15 @@ export default async function ContactPage({ searchParams }) {
 
         <section className="form-section">
           <h2>Send a message</h2>
-          <form action="/api/contact" method="POST">
+          <form action={formAction} method="POST">
+            {!hasManagedEmail ? (
+              <>
+                <input type="hidden" name="_next" value={successUrl} />
+                <input type="hidden" name="_captcha" value="false" />
+                <input type="hidden" name="_template" value="table" />
+                <input type="hidden" name="_subject" value="New portfolio message" />
+              </>
+            ) : null}
             <fieldset>
               <p>
                 <label htmlFor="name">Full name</label>
@@ -77,6 +107,16 @@ export default async function ContactPage({ searchParams }) {
               <p>
                 <label htmlFor="message">Message</label>
                 <textarea id="message" name="message" required />
+              </p>
+              <p className="hp" aria-hidden="true">
+                <label htmlFor="website">Website</label>
+                <input
+                  type="text"
+                  id="website"
+                  name={hasManagedEmail ? "website" : "_honey"}
+                  tabIndex={-1}
+                  autoComplete="off"
+                />
               </p>
               <button type="submit" className="btn btn-primary">
                 Send message
