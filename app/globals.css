@@ -1666,6 +1666,16 @@ form textarea {
   resize: vertical;
 }
 
+/* Honeypot field: hidden from humans, visible to simple bots */
+form .hp {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
 .msg-success {
   margin-bottom: 1rem;
   padding: 0.82rem 0.9rem;
