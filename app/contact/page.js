@@ -2,10 +2,16 @@ export const metadata = {
   title: "Contact - Oliver Massaad",
 };
 
+const errorMessages = {
+  missing_fields: "Please fill in your name, email, and message before sending.",
+  invalid_email: "That email address doesn't look valid. Please double-check it and try again.",
+};
+
 export default async function ContactPage({ searchParams }) {
   const params = await searchParams;
   const sent = params?.sent === "1";
-  const hasError = Boolean(params?.error);
+  const errorCode = params?.error;
+  const errorMessage = errorCode ? errorMessages[errorCode] : null;
 
   return (
     <>
@@ -19,10 +25,14 @@ export default async function ContactPage({ searchParams }) {
           Thanks! Your message has been sent. I&apos;ll get back to you soon.
         </div>
       ) : null}
-      {hasError ? (
+      {errorCode ? (
         <div className="msg-error" role="alert">
-          Message could not be sent right now. Please email me directly at{" "}
-          <a href="mailto:olimasad@gmail.com">olimasad@gmail.com</a>.
+          {errorMessage ?? (
+            <>
+              Message could not be sent right now. Please email me directly at{" "}
+              <a href="mailto:olimasad@gmail.com">olimasad@gmail.com</a>.
+            </>
+          )}
         </div>
       ) : null}
 
