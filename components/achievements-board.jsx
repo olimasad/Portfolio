@@ -12,7 +12,11 @@ function isExperience(item) {
 function AchievementCard({ achievement, variant }) {
   const detailId = detailIdForAchievement(achievement.slug);
   const badgeClass =
-    variant === "winner" ? "badge badge-winner" : variant === "certificate" ? "badge badge-cert" : "badge";
+    variant === "winner"
+      ? "badge badge-winner"
+      : variant === "certificate"
+        ? "badge badge-cert"
+        : "badge badge-participant";
   const badgeLabel =
     variant === "winner" ? "Winner" : variant === "certificate" ? "Certificate" : achievement.status || "Participant";
   const cardClass =
@@ -37,7 +41,7 @@ function AchievementCard({ achievement, variant }) {
         </p>
       ) : null}
       <h2>{achievement.title}</h2>
-      <p>{achievement.description}</p>
+      <p className="card-description">{achievement.description}</p>
       {achievement.team ? <p className="meta">Team: {achievement.team}</p> : null}
       <div className="achievement-actions">
         <span className="btn btn-secondary btn-pill achievement-btn">View Details</span>

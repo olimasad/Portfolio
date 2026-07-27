@@ -22,6 +22,10 @@ html[data-theme="light"] {
   --accent-green: #9eb396;
   --accent-green-soft: rgba(158, 179, 150, 0.22);
   --success: #7a9e72;
+  --badge-winner-text: #806300;
+  --badge-winner-bg: rgba(238, 196, 62, 0.28);
+  --badge-participant-text: #765b3d;
+  --badge-participant-bg: rgba(190, 153, 111, 0.24);
   --on-accent: #fffcf8;
   --nav-bg: rgba(247, 247, 244, 0.92);
   --overlay-bg: rgba(247, 247, 244, 0.72);
@@ -70,6 +74,10 @@ html[data-theme="dark"] {
   --accent-green: #9eb396;
   --accent-green-soft: rgba(158, 179, 150, 0.2);
   --success: #8fb587;
+  --badge-winner-text: #f1d36a;
+  --badge-winner-bg: rgba(222, 178, 43, 0.2);
+  --badge-participant-text: #d8b990;
+  --badge-participant-bg: rgba(173, 128, 82, 0.22);
   --on-accent: #1c1916;
   --nav-bg: rgba(23, 21, 18, 0.92);
   --overlay-bg: rgba(23, 21, 18, 0.72);
@@ -1460,8 +1468,8 @@ html[data-theme="dark"] .achievement-track .achievement-card h2 {
 .badge-winner,
 .gallery-item .badge.badge-winner,
 .card .badge.badge-winner {
-  color: var(--accent);
-  background: transparent;
+  color: var(--badge-winner-text);
+  background: var(--badge-winner-bg);
   border: none;
   box-shadow: none;
 }
@@ -1469,6 +1477,14 @@ html[data-theme="dark"] .achievement-track .achievement-card h2 {
 .badge-cert {
   color: var(--success);
   background: var(--accent-green-soft);
+}
+
+.badge-participant,
+.card .badge.badge-participant {
+  color: var(--badge-participant-text);
+  background: var(--badge-participant-bg);
+  border: none;
+  box-shadow: none;
 }
 
 .skill-group strong {
@@ -2331,8 +2347,8 @@ textarea:focus {
 .badge-winner,
 .gallery-item .badge.badge-winner,
 .card .badge.badge-winner {
-  color: var(--accent);
-  background: transparent;
+  color: var(--badge-winner-text);
+  background: var(--badge-winner-bg);
   border: none;
   box-shadow: none;
 }
@@ -2340,6 +2356,14 @@ textarea:focus {
 .badge-cert {
   color: var(--success);
   background: var(--accent-green-soft);
+}
+
+.badge-participant,
+.card .badge.badge-participant {
+  color: var(--badge-participant-text);
+  background: var(--badge-participant-bg);
+  border: none;
+  box-shadow: none;
 }
 
 @media (max-width: 980px) {
@@ -2516,6 +2540,11 @@ textarea:focus {
 
   .achievement-tracks {
     grid-template-columns: 1fr;
+  }
+
+  .projects-gallery .card-description,
+  .achievement-card .card-description {
+    display: none;
   }
 
   .achievements-timeline {

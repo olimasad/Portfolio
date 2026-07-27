@@ -19,7 +19,7 @@ export default function ProjectsBoard() {
               <span className="badge">Project {index + 1}</span>
             </div>
             <h2>{project.name}</h2>
-            <p>{project.description}</p>
+            <p className="card-description">{project.description}</p>
           </ExpandableBlock>
         ))}
       </section>
