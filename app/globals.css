@@ -430,8 +430,18 @@ nav .logo {
   font-weight: 700;
   font-size: 0.98rem;
   letter-spacing: -0.02em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
   transition: opacity 0.2s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
   margin-right: auto;
+}
+
+nav .logo img {
+  width: 2.125rem;
+  height: 2.125rem;
+  flex: 0 0 auto;
+  border-radius: 0.4rem;
 }
 
 nav .logo:hover {
@@ -2217,7 +2227,7 @@ footer p { margin: 0 0 0.24rem; }
 
 .achievement-track .achievement-card.ach-fade.in,
 .projects-gallery .project-item.ach-fade.in {
-  opacity: 1;
+   opacity: 1;
   transform: translateY(0) scale(1) !important;
   filter: blur(0);
   transition: opacity 0.42s cubic-bezier(0.22, 1, 0.36, 1), transform 0.42s cubic-bezier(0.22, 1, 0.36, 1), filter 0.42s ease;

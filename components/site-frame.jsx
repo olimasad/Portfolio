@@ -35,7 +35,8 @@ export default function SiteFrame({ children }) {
       <header className="nav-wrap">
         <nav>
           <Link href="/" className="logo">
-            Oliver Massaad
+            <img src="/logo.svg" alt="" width="34" height="34" />
+            <span>Oliver Massaad</span>
           </Link>
           <ul id="nav-menu">
             {navItems.map((item) => (
