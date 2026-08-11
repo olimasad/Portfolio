@@ -1,34 +1,11 @@
 import Link from "next/link";
-import DetailModal from "../components/detail-modal";
-import { ExpandableBlock, HomeDetailProvider } from "../components/home-detail-context";
+import PageDock from "../components/page-dock";
+import { ExpandableBlock } from "../components/home-detail-context";
+import IconCloudPanel from "../components/icon-cloud-panel";
+import StatsBand from "../components/stats-band";
 import StaggeredWordRotate from "../components/staggered-word-rotate";
-
-const skills = [
-  "Java",
-  "Python",
-  "JavaScript",
-  "React",
-  "HTML5",
-  "CSS3",
-  "Backend Development",
-  "Frontend Development",
-  "Unreal Engine",
-  "Twinmotion",
-  "Unity 3D",
-  "Algorithms",
-  "Data Structures",
-  "Applied Mathematics",
-  "GitHub Copilot",
-  "Google AI Studio",
-  "Prompt Engineering",
-  "Matterport",
-  "VR Prototyping",
-  "3D Environment Design",
-  "Roblox Studio",
-  "Data Analysis",
-  "Modern AI Models",
-  "Git",
-];
+import { achievements, projects } from "../lib/data";
+import { skills } from "../lib/skills";
 
 const taglineWords = [
   "Full-stack web app developer",
@@ -36,7 +13,88 @@ const taglineWords = [
   "5x Hackathon Winner",
 ];
 
+const experience = [
+  {
+    detailId: "experience-morgan-stanley",
+    org: "Morgan Stanley",
+    role: "Technologist IST Intern",
+    dates: "2026",
+    badge: "Incoming",
+    blurb: "Technology and innovation work inside the IST organization.",
+  },
+  {
+    detailId: "experience-sajo",
+    org: "SAJO",
+    role: "Innovation & Technology Intern",
+    dates: "2023 – 2025",
+    badge: "2 yrs",
+    blurb: "VR office simulations, LiDAR capture, and web architecture.",
+  },
+];
+
+const education = [
+  {
+    detailId: "education-dawson",
+    school: "Dawson College",
+    dates: "2024 – 2026",
+    badge: "Current",
+    program: "DEC Computer Science & Mathematics",
+    tags: ["Coding Club Co-founder", "Hackathons"],
+  },
+  {
+    detailId: "education-stanislas",
+    school: "Stanislas College",
+    dates: "2013 – 2024",
+    badge: "Graduated",
+    program: "High School Diploma",
+    tags: ["Highest Honors", "RadioStan"],
+  },
+];
+
+const profile = [
+  { detailId: "profile-student", label: "Student", meta: "SCSM @ Dawson" },
+  { detailId: "profile-developer", label: "Developer", meta: "Full-stack & software" },
+  { detailId: "profile-founder", label: "Founder", meta: "Projects & coding club" },
+  { detailId: "profile-vr-intern", label: "Modeler", meta: "VR intern @ SAJO" },
+  { detailId: "profile-technologist-intern", label: "Technologist", meta: "IST @ Morgan Stanley" },
+  { detailId: "profile-musician", label: "Musician", meta: "Piano · Guitar · RE:ZONE" },
+];
+
+const competitions = [
+  { detailId: "award-aerohacks", title: "McGill AeroHacks", result: "1st Place", size: "150+ participants" },
+  { detailId: "award-conuhacks-x", title: "ConUHacks X", result: "2nd Place", size: "1000+ participants" },
+  { detailId: "award-athacks", title: "AtHacks", result: "3rd Place", size: "400+ participants" },
+  { detailId: "award-hackdecouverte", title: "HackDécouverte", result: "Gemini API Award", size: "150+ participants" },
+  { detailId: "award-dialogue", title: "Dialogue 2026", result: "Track Award", size: "200+ participants" },
+];
+
+const dockSections = [
+  { id: "about", label: "About Me", icon: "about" },
+  { id: "profile", label: "Profile", icon: "profile" },
+  { id: "experience", label: "Experience", icon: "experience" },
+  { id: "education", label: "Education", icon: "education" },
+  { id: "competitions", label: "Competitions Won", icon: "competitions" },
+  { id: "volunteer", label: "Volunteer", icon: "volunteer" },
+  { id: "skills", label: "Technical Skills", icon: "skills" },
+];
+
+const volunteer = [
+  { detailId: "volunteer-shine-the-light", title: "Shine the Light", meta: "Awareness campaign" },
+  { detailId: "volunteer-radiostan", title: "Mission Bon Accueil", meta: "Food for dog shelters" },
+  { detailId: "volunteer-podcast", title: "RadioStan", meta: "Host & presenter" },
+  { detailId: "volunteer-sports", title: "Soccer & Karate", meta: "Former competitor" },
+  { detailId: "volunteer-rezone", title: "RE:ZONE", meta: "J-Rock keyboardist" },
+];
+
 export default function HomePage() {
+  const wins = achievements.filter((item) => item.victory === true).length;
+
+  const stats = [
+    { value: wins, label: "Hackathon Wins" },
+    { value: projects.length, label: "Projects Shipped" },
+    { value: 3, label: "Years of Experience" },
+  ];
+
   return (
     <>
       <header className="hero-flat">
@@ -66,162 +124,142 @@ export default function HomePage() {
         </div>
       </header>
 
-      <HomeDetailProvider>
-        <div className="home-grid">
-          <section className="section span-2 about-section" data-reveal="bottom">
-            <h2>About Me</h2>
-            <p className="long-animate">
-              I am a computer science and mathematics student focused on building high-impact software
-              with practical AI integration. I enjoy solving real problems end to end: planning,
-              prototyping, shipping, and refining with user feedback. My background in development and
-              coordination helps me move quickly while staying organized, especially in team settings where
-              communication and ownership matter.
+      <div className="home-page">
+        <StatsBand stats={stats} />
+
+        <PageDock sections={dockSections} currentHref="/" />
+
+        {/* Tiles deliberately vary in width row to row so the page never settles into one rhythm. */}
+        <div className="home-bento">
+          <section id="about" className="bento bento-7 bento-about" data-reveal="left">
+            <h2 className="bento-title">About Me</h2>
+            <p className="bento-lead">
+              Computer science and mathematics student building high-impact software with practical AI
+              integration. I plan, prototype, ship, and keep refining with real feedback.
             </p>
-          </section>
-
-          <section className="section highlights-panel about-section" data-reveal="left">
-            <h2>Profile</h2>
-            <div className="fact-grid">
-              <ExpandableBlock detailId="profile-student" className="fact-card">
-                <span className="fact-number">Student</span>
-                <span className="fact-label">SCSM Student @ Dawson College</span>
-              </ExpandableBlock>
-              <ExpandableBlock detailId="profile-developer" className="fact-card">
-                <span className="fact-number">Developer</span>
-                <span className="fact-label">Full-Stack Developer & Software Engineer</span>
-              </ExpandableBlock>
-              <ExpandableBlock detailId="profile-founder" className="fact-card">
-                <span className="fact-number">Founder</span>
-                <span className="fact-label">Creator & Maintainer of Multiple Projects</span>
-              </ExpandableBlock>
-              <ExpandableBlock detailId="profile-vr-intern" className="fact-card">
-                <span className="fact-number">Modeler</span>
-                <span className="fact-label">Technology and Innovation Intern for 2 years @ SAJO</span>
-              </ExpandableBlock>
-              <ExpandableBlock detailId="profile-technologist-intern" className="fact-card">
-                <span className="fact-number">Technologist</span>
-                <span className="fact-label">IST Technology Intern @ Morgan Stanley</span>
-              </ExpandableBlock>
-              <ExpandableBlock detailId="profile-musician" className="fact-card">
-                <span className="fact-number">Musician</span>
-                <span className="fact-label">Pianist & Guitarist · Keyboardist of the band RE:ZONE</span>
-              </ExpandableBlock>
+            <div className="home-about-tags">
+              <span className="pill">Montreal, Canada</span>
+              <span className="pill">Full-stack</span>
+              <span className="pill">AI integration</span>
+              <span className="pill">VR & 3D</span>
             </div>
           </section>
 
-          <section className="section education-panel about-section" data-reveal="right">
-            <h2>Education</h2>
-            <div className="mini-stack">
-              <ExpandableBlock detailId="education-dawson" className="mini-card">
-                <span className="mini-year">2024-2026</span>
-                <h3>DEC Computer Science & Mathematics</h3>
-                <p>Dawson College</p>
-              </ExpandableBlock>
-              <ExpandableBlock detailId="education-stanislas" className="mini-card">
-                <span className="mini-year">2013-2024</span>
-                <h3>High School Diploma - Highest Honors</h3>
-                <p>Stanislas College, Outremont</p>
-              </ExpandableBlock>
-            </div>
-          </section>
-
-          <section className="section span-2 experience-panel about-section" data-reveal="bottom">
-            <h2>Experience</h2>
-            <div className="experience-grid">
-              <ExpandableBlock detailId="experience-sajo" className="experience-card">
-                <div className="experience-head">
-                  <h3>Innovation & Technology Intern</h3>
-                  <span>2023-2025</span>
-                </div>
-                <p className="where">SAJO (International General Contractor)</p>
-                <ul>
-                  <li>Built VR-ready office simulations in Twinmotion for Miami and Montreal spaces.</li>
-                  <li>Performed LiDAR and Matterport scanning workflows for site capture projects.</li>
-                  <li>Contributed to AstraIPT website layout, logic, and backend architecture.</li>
-                </ul>
-              </ExpandableBlock>
-              <ExpandableBlock detailId="experience-morgan-stanley" className="experience-card">
-                <div className="experience-head">
-                  <h3>Technologist IST Intern</h3>
-                  <span>2026</span>
-                </div>
-                <p className="where">Morgan Stanley</p>
-                <ul>
-                  <li>
-                    Supporting technology and innovation work within Morgan Stanley&apos;s IST organization.
-                  </li>
-                  <li>Applying full-stack development skills in a financial technology environment.</li>
-                </ul>
-              </ExpandableBlock>
-            </div>
-          </section>
-
-          <section className="section volunteer-panel about-section" data-reveal="left">
-            <h2>Volunteer & extracurricular</h2>
-            <div className="award-mini-grid">
-              <ExpandableBlock detailId="volunteer-shine-the-light" className="award-mini">
-                <span className="award-mini-title">Shine the Light on Woman Abuse · </span>
-                <span className="award-mini-meta">Awareness campaign for violence</span>
-              </ExpandableBlock>
-              <ExpandableBlock detailId="volunteer-radiostan" className="award-mini">
-                <span className="award-mini-title">Mission Bon Accueil · </span>
-                <span className="award-mini-meta">Providing food for dog shelters</span>
-              </ExpandableBlock>
-              <ExpandableBlock detailId="volunteer-podcast" className="award-mini">
-                <span className="award-mini-title">RadioStan Host & Presenter · </span>
-                <span className="award-mini-meta">Student radio broadcast</span>
-              </ExpandableBlock>
-              <ExpandableBlock detailId="volunteer-sports" className="award-mini">
-                <span className="award-mini-title">Soccer & Karate · </span>
-                <span className="award-mini-meta">Former soccer player and karate competitor</span>
-              </ExpandableBlock>
-              <ExpandableBlock detailId="volunteer-rezone" className="award-mini">
-                <span className="award-mini-title">RE:ZONE · </span>
-                <span className="award-mini-meta">Keyboardist for a J-Rock band</span>
-              </ExpandableBlock>
-            </div>
-          </section>
-
-          <section className="section achievements-panel about-section" data-reveal="right">
-            <h2>Awards & Certificates</h2>
-            <div className="award-mini-grid">
-              <ExpandableBlock detailId="award-aerohacks" className="award-mini">
-                <span className="award-mini-title">McGill AeroHacks · </span>
-                <span className="award-mini-meta">1st Place · 150+ participants</span>
-              </ExpandableBlock>
-              <ExpandableBlock detailId="award-conuhacks-x" className="award-mini">
-                <span className="award-mini-title">ConUHacks X · </span>
-                <span className="award-mini-meta">2nd Place · 1000+ participants</span>
-              </ExpandableBlock>
-              <ExpandableBlock detailId="award-athacks" className="award-mini">
-                <span className="award-mini-title">AtHacks · </span>
-                <span className="award-mini-meta">3rd Place · 400+ participants</span>
-              </ExpandableBlock>
-              <ExpandableBlock detailId="award-hackdecouverte" className="award-mini">
-                <span className="award-mini-title">HackDécouverte · </span>
-                <span className="award-mini-meta">Gemini API · 150+ participants</span>
-              </ExpandableBlock>
-              <ExpandableBlock detailId="award-dialogue" className="award-mini">
-                <span className="award-mini-title">Dialogue 2026 · </span>
-                <span className="award-mini-meta">Award · 200+ participants</span>
-              </ExpandableBlock>
-            </div>
-          </section>
-
-          <section className="section span-2 skill-cloud-panel about-section" data-reveal="bottom">
-            <h2>Technical Skills</h2>
-            <div className="skill-cloud">
-              {skills.map((skill) => (
-                <span key={skill} className="skill-cloud-tag">
-                  {skill}
-                </span>
+          <section id="profile" className="bento bento-5" data-reveal="right">
+            <h2 className="bento-title">Profile</h2>
+            <div className="bento-rows">
+              {profile.map((item) => (
+                <ExpandableBlock
+                  key={item.detailId}
+                  detailId={item.detailId}
+                  className="bento-row bento-row-inline"
+                  data-reveal="right"
+                >
+                  <span className="bento-row-main">{item.label}</span>
+                  <span className="bento-row-meta">{item.meta}</span>
+                </ExpandableBlock>
               ))}
             </div>
           </section>
-        </div>
 
-        <DetailModal />
-      </HomeDetailProvider>
+          <section id="experience" className="bento bento-5" data-reveal="left">
+            <h2 className="bento-title">Experience</h2>
+            <div className="bento-rows">
+              {experience.map((item) => (
+                <ExpandableBlock
+                  key={item.detailId}
+                  detailId={item.detailId}
+                  className="bento-row"
+                  data-reveal="left"
+                >
+                  <div className="bento-row-top">
+                    <span className="bento-row-main">{item.org}</span>
+                    <span className="home-tag">{item.badge}</span>
+                  </div>
+                  <span className="bento-row-meta">{item.role}</span>
+                  <span className="bento-row-dates">{item.dates}</span>
+                  <p className="bento-row-blurb">{item.blurb}</p>
+                </ExpandableBlock>
+              ))}
+            </div>
+          </section>
+
+          <section id="education" className="bento bento-7" data-reveal="right">
+            <h2 className="bento-title">Education</h2>
+            <div className="bento-rows">
+              {education.map((item) => (
+                <ExpandableBlock
+                  key={item.detailId}
+                  detailId={item.detailId}
+                  className="bento-row"
+                  data-reveal="right"
+                >
+                  <div className="bento-row-top">
+                    <span className="bento-row-main">{item.school}</span>
+                    <span className="home-tag">{item.badge}</span>
+                  </div>
+                  <span className="bento-row-dates">{item.dates}</span>
+                  <span className="bento-row-meta">{item.program}</span>
+                  <div className="home-entry-tags">
+                    {item.tags.map((tag) => (
+                      <span key={tag} className="pill">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </ExpandableBlock>
+              ))}
+            </div>
+          </section>
+
+          <section id="competitions" className="bento bento-8" data-reveal="left">
+            <div className="bento-head">
+              <h2 className="bento-title">Competitions Won</h2>
+              <Link href="/achievements" className="home-head-link">
+                View all →
+              </Link>
+            </div>
+            <div className="bento-rows">
+              {competitions.map((item) => (
+                <ExpandableBlock
+                  key={item.detailId}
+                  detailId={item.detailId}
+                  className="bento-row bento-row-award"
+                  data-reveal="left"
+                >
+                  <span className="bento-row-main">{item.title}</span>
+                  <span className="bento-row-result">{item.result}</span>
+                  <span className="bento-row-meta">{item.size}</span>
+                </ExpandableBlock>
+              ))}
+            </div>
+          </section>
+
+          <section id="volunteer" className="bento bento-4" data-reveal="right">
+            <h2 className="bento-title">Volunteer</h2>
+            <div className="bento-rows">
+              {volunteer.map((item) => (
+                <ExpandableBlock
+                  key={item.detailId}
+                  detailId={item.detailId}
+                  className="bento-row"
+                  data-reveal="right"
+                >
+                  <span className="bento-row-main">{item.title}</span>
+                  <span className="bento-row-meta">{item.meta}</span>
+                </ExpandableBlock>
+              ))}
+            </div>
+          </section>
+
+          <section id="skills" className="bento bento-12" data-reveal="bottom">
+            <h2 className="bento-title">Technical Skills</h2>
+            <div className="home-skills">
+              <IconCloudPanel items={skills} />
+            </div>
+          </section>
+        </div>
+      </div>
     </>
   );
 }

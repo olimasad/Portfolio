@@ -12,7 +12,7 @@ const inter = Inter({
 export const metadata = {
   title: "Oliver Massaad",
   description:
-    "Oliver Massaad — Computer Science & Mathematics student, tech-driven finance, full-stack development, AI projects.",
+    "Oliver Massaad: Computer Science & Mathematics student, tech-driven finance, full-stack development, AI projects.",
   icons: {
     icon: "/logo.svg",
     shortcut: "/logo.svg",

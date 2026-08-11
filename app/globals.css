@@ -38,14 +38,23 @@ html[data-theme="light"] {
   --max-width: min(1420px, 92vw);
   --nav-height: 62px;
 
-  /* Hover scale tuning — adjust these to change lift on hover */
+  /*
+   * Hover timing. The long tail on this curve is what makes a pointer move read as a
+   * glide instead of a snap, and transitions stay interruptible so crossing between
+   * neighbours blends mid-flight rather than queueing.
+   */
+  --hover-ease: cubic-bezier(0.33, 1, 0.68, 1);
+  --hover-dur: 460ms;
+  --hover-dur-fast: 320ms;
+
+  /* Hover scale tuning: adjust these to change lift on hover */
   --hover-scale-section: 1.018;        /* outer .section containers */
   --hover-scale-experience: 1.035;     /* experience-grid cards */
   --hover-scale-mini-card: 1.03;       /* fact-card, mini-card, award-mini */
   --hover-scale-gallery-card: 1.07;    /* project & achievement cards */
   --hover-scale-skill-tag: 1.02;       /* skill-cloud tags */
 
-  /* Detail modal — backdrop & poster panel */
+  /* Detail modal: backdrop & poster panel */
   --detail-backdrop-tint: rgba(247, 247, 244, 0.55);
   --detail-backdrop-blur: 22px;
   --detail-modal-width: min(1400px, 94vw);
@@ -115,16 +124,6 @@ a:active {
   html::after {
     display: none;
   }
-}
-
-html.ui-locked :is(.section, .card, .contact-block, .form-section, .fact-card, .mini-card, .experience-card, .achievement-banner, .award-mini, .timeline-card, .chip, .skill-cloud span),
-html.ui-locked :is(.section, .card, .contact-block, .form-section, .fact-card, .mini-card, .experience-card, .achievement-banner, .award-mini, .timeline-card, .chip, .skill-cloud span) *:not(.cursor-blur) {
-  pointer-events: none !important;
-}
-
-.reveal-lock,
-.reveal-lock *:not(.cursor-blur) {
-  pointer-events: none !important;
 }
 
 @keyframes textFadeUp {
@@ -433,7 +432,7 @@ nav .logo {
   display: inline-flex;
   align-items: center;
   gap: 0.65rem;
-  transition: opacity 0.2s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: color var(--hover-dur) var(--hover-ease), opacity var(--hover-dur) var(--hover-ease);
   margin-right: auto;
 }
 
@@ -465,8 +464,29 @@ nav ul {
   --nav-pill-w: 0px;
 }
 
+/*
+ * One underline for the whole row. It follows whatever you point at and settles back on
+ * the current page, so choosing a link is a single continuous slide rather than one rule
+ * blinking out while another blinks in.
+ */
 nav ul::before {
-  display: none;
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  width: var(--nav-pill-w);
+  border-radius: 2px;
+  background: var(--accent);
+  transform: translate3d(var(--nav-pill-x), 0, 0);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 440ms var(--hover-ease), width 440ms var(--hover-ease),
+    opacity 240ms var(--hover-ease);
+}
+
+nav ul[data-nav-marker="on"]::before {
+  opacity: 1;
 }
 
 nav ul a {
@@ -482,7 +502,8 @@ nav ul a {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   transform: none;
-  transition: color 0.2s ease;
+  transition: color var(--hover-dur-fast) var(--hover-ease),
+    border-bottom-color var(--hover-dur-fast) var(--hover-ease);
   border-bottom: 2px solid transparent;
 }
 
@@ -492,6 +513,15 @@ nav ul a.active {
   color: var(--accent);
   background: transparent;
   border-bottom-color: var(--accent);
+}
+
+/*
+ * Per-link rules are the pre-measurement fallback. Once the sliding underline is live it
+ * would double up on them, so they stand down.
+ */
+nav ul[data-nav-marker="on"] a:hover,
+nav ul[data-nav-marker="on"] a.active {
+  border-bottom-color: transparent;
 }
 
 .nav-socials {
@@ -509,6 +539,30 @@ nav ul a.active {
   background: transparent;
   color: var(--text);
   cursor: pointer;
+  transition: color var(--hover-dur-fast) var(--hover-ease),
+    border-color var(--hover-dur-fast) var(--hover-ease),
+    background var(--hover-dur-fast) var(--hover-ease), transform var(--hover-dur) var(--hover-ease);
+}
+
+.nav-toggle:hover,
+.nav-toggle:focus-visible {
+  color: var(--accent);
+  border-color: var(--line-strong);
+  background: var(--surface-soft);
+}
+
+.nav-toggle:active {
+  transform: scale(0.93);
+}
+
+/* The glyph rotates a touch as the panel opens so the button reflects its own state. */
+.nav-toggle span {
+  display: block;
+  transition: transform var(--hover-dur) var(--hover-ease);
+}
+
+.nav-toggle[aria-expanded="true"] span {
+  transform: rotate(90deg);
 }
 
 .nav-actions {
@@ -724,7 +778,9 @@ main {
   font-size: 0.78rem;
   letter-spacing: 0.02em;
   transform: none;
-  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+  transition: border-color var(--hover-dur-fast) var(--hover-ease),
+    background var(--hover-dur-fast) var(--hover-ease),
+    color var(--hover-dur-fast) var(--hover-ease);
   animation: none;
 }
 
@@ -744,6 +800,1472 @@ main {
   display: grid;
   gap: 2rem;
   grid-template-columns: 1.2fr 1fr;
+}
+
+/* Vertical rhythm for a full page of stacked bands. Every major page uses one of these. */
+.home-page,
+.page-body {
+  --home-gap: 3.1rem;
+  display: grid;
+  gap: var(--home-gap);
+}
+
+/* Editorial "by the numbers" strip: hairline rules instead of boxed cards. */
+.stats-band {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding: clamp(1rem, 1.8vw, 1.4rem) 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.stats-band-item {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0 clamp(0.9rem, 2.4vw, 1.9rem);
+  border-left: 1px solid var(--line);
+}
+
+.stats-band-item:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+.stats-band-value {
+  display: flex;
+  align-items: baseline;
+  font-size: clamp(2rem, 3.2vw, 2.6rem);
+  font-weight: 600;
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.stats-band-suffix {
+  font-size: 0.4em;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--accent);
+  margin-left: 0.15em;
+}
+
+.stats-band-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+@media (max-width: 720px) {
+  .stats-band {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.6rem;
+  }
+
+  .stats-band-item {
+    padding: 0;
+    border-left: 0;
+  }
+}
+
+/*
+ * Dock: jump nav for the bento sections plus the three sibling pages. The outer box
+ * holds the tallest state so magnifying an icon never reflows the page; the panel is
+ * bottom-aligned inside it and icons grow up into that reserved headroom.
+ */
+/*
+ * The anchor is the grid child and keeps holding its space after the dock pins into
+ * the navbar, so nothing below it jumps. It also owns the pull-up: the dock reserves
+ * headroom above its panel for magnified icons, which would otherwise stack on top of
+ * a full grid gap and leave the row stranded below the stats band.
+ */
+.dock-anchor {
+  margin-top: calc(var(--home-gap, 0rem) * -1);
+}
+
+.dock-outer {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  /*
+   * Deliberately not a scroll container here. `overflow-x: auto` clips its contents, so
+   * an item travelling back in from the navbar would be cut off until it landed inside
+   * the box. Panning is only needed on narrow screens, where the dock never pins, so
+   * that behaviour is scoped to the compact breakpoint instead.
+   */
+  overflow: visible;
+  scrollbar-width: none;
+}
+
+.dock-outer::-webkit-scrollbar {
+  display: none;
+}
+
+.dock-panel {
+  display: flex;
+  align-items: flex-end;
+  gap: clamp(0.4rem, 1vw, 0.85rem);
+  width: fit-content;
+  margin: 0 auto;
+  padding: 0 0.7rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 1.15rem;
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+
+.dock-item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-soft);
+  color: var(--text-muted);
+  cursor: pointer;
+  outline: none;
+  transition: background var(--hover-dur-fast) var(--hover-ease),
+    border-color var(--hover-dur-fast) var(--hover-ease),
+    color var(--hover-dur-fast) var(--hover-ease);
+}
+
+.dock-item:hover {
+  background: var(--surface-hover);
+  border-color: var(--line-strong);
+  color: var(--text);
+}
+
+.dock-item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* The trailing items leave the page, so they read in the accent colour. */
+.dock-item-route {
+  color: var(--accent);
+}
+
+.dock-item-route:hover {
+  color: var(--accent-hover);
+  border-color: var(--accent);
+}
+
+.dock-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dock-icon svg {
+  width: 26px;
+  height: 26px;
+  display: block;
+}
+
+.dock-label {
+  position: absolute;
+  top: -1.85rem;
+  left: 50%;
+  width: fit-content;
+  padding: 0.2rem 0.55rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 0.4rem;
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+  color: var(--text);
+  font-size: 0.72rem;
+  letter-spacing: 0.01em;
+  white-space: pre;
+  pointer-events: none;
+}
+
+@media (max-width: 860px) {
+  .dock-outer {
+    justify-content: flex-start;
+    overflow-x: auto;
+  }
+
+  .dock-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/*
+ * Docked into the navbar. The slot is empty (and collapsed) on every other page and
+ * on narrow screens, and only fills once the homepage dock scrolls up into it.
+ */
+/*
+ * The links and the parked dock are stacked in one grid cell. The cell is as wide as the
+ * wider of the two (the links), so handing the bar from one to the other never resizes
+ * anything around them, and both can animate freely because neither is in flow.
+ */
+.nav-swap {
+  display: grid;
+  align-items: center;
+  justify-items: end;
+  min-width: 0;
+}
+
+.nav-swap > * {
+  grid-area: 1 / 1;
+}
+
+.nav-dock-slot {
+  display: none;
+}
+
+/*
+ * Keyed off the portaled dock itself rather than a class toggled in an effect, so the
+ * links cannot linger for a frame after the row has taken the bar.
+ */
+.nav-dock-slot:has(.dock-outer) {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+/*
+ * Confined to the widths where the dock can actually park, both because the handover is
+ * the only thing these rules are for and because an id selector here would otherwise
+ * outrank the dropdown transition the menu uses on phones.
+ */
+@media (min-width: 1024px) {
+  #nav-menu {
+    transition: opacity 260ms var(--hover-ease), transform 460ms var(--hover-ease), visibility 0s;
+  }
+
+  /*
+   * The dock is standing in for these while it holds the bar. `:not(.dock-leaving)` is what
+   * makes the return overlap: the moment the row starts its exit the links are already on
+   * their way back in, so the two cross rather than queue.
+   */
+  nav:has(.nav-dock-slot .dock-panel:not(.dock-leaving)) #nav-menu {
+    opacity: 0;
+    visibility: hidden;
+    transform: translate3d(0, -12px, 0);
+    pointer-events: none;
+    /* Quicker on the way out than on the way back, so the arriving row is not fighting the
+       links for the same patch of the bar for long. */
+    transition-duration: 190ms, 400ms, 0s;
+    transition-delay: 0s, 0s, 190ms;
+  }
+}
+
+.nav-dock-slot .dock-outer {
+  width: auto;
+  overflow: visible;
+}
+
+/*
+ * Handover choreography. The page icons rise into the bar from underneath, staggered so
+ * they arrive in sequence, and Home then slides in from the right to take the left end.
+ * Index 1 is the first riser (Home holds index 0), so the stagger counts from there.
+ */
+.dock-pinned .dock-item {
+  animation: dockRise 560ms var(--hover-ease) backwards;
+  animation-delay: calc((var(--dock-index, 1) - 1) * 90ms);
+}
+
+/* Same specificity as the rule above, so this has to stay after it to win. */
+.dock-pinned .dock-item-lead {
+  animation: dockSlideFromRight 520ms var(--hover-ease) 360ms backwards;
+}
+
+/* Giving the bar back: the row drops away underneath the returning links. */
+.dock-panel.dock-leaving {
+  animation: dockHandBack 260ms var(--hover-ease) forwards;
+  pointer-events: none;
+}
+
+/* An entrance still in flight would fight the exit, so it is cancelled outright. */
+.dock-panel.dock-leaving .dock-item {
+  animation: none;
+}
+
+@keyframes dockHandBack {
+  to {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+}
+
+@keyframes dockRise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 34px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes dockSlideFromRight {
+  from {
+    opacity: 0;
+    transform: translate3d(28px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.dock-panel.dock-pinned {
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.dock-pinned .dock-item {
+  border-radius: 10px;
+}
+
+.dock-pinned .dock-icon svg {
+  width: 19px;
+  height: 19px;
+}
+
+/* Labels flip below the row, since above it would land off the top of the screen. */
+.dock-pinned .dock-label {
+  top: auto;
+  bottom: -1.9rem;
+}
+
+/*
+ * Bento grid: tiles carry their own heading and claim different column spans
+ * (7/5, 5/7, 8/4, 12) so no two rows break at the same point.
+ */
+.home-bento,
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: clamp(0.9rem, 1.8vw, 1.4rem);
+  align-items: stretch;
+}
+
+.bento {
+  display: flex;
+  flex-direction: column;
+  gap: 1.05rem;
+  padding: clamp(1.25rem, 2.1vw, 1.75rem);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+/* Fallback for hash links; the dock itself scrolls with its own measured offset. */
+.bento[id] {
+  scroll-margin-top: calc(var(--nav-height) + 1.6rem);
+}
+
+.bento-4 { grid-column: span 4; }
+.bento-5 { grid-column: span 5; }
+.bento-6 { grid-column: span 6; }
+.bento-7 { grid-column: span 7; }
+.bento-8 { grid-column: span 8; }
+.bento-12 { grid-column: span 12; }
+
+.bento-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.bento-title {
+  margin: 0;
+  font-size: clamp(1.05rem, 1.5vw, 1.25rem);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--text);
+  border-left: 3px solid var(--accent-green);
+  padding-left: 0.8rem;
+}
+
+.bento-lead {
+  margin: 0;
+  font-size: clamp(1.1rem, 1.7vw, 1.45rem);
+  line-height: 1.55;
+  letter-spacing: -0.01em;
+  color: var(--text-muted);
+  max-width: 40ch;
+}
+
+/* Tags settle against the bottom edge so the tile matches its taller neighbour. */
+.bento-about .home-about-tags {
+  margin-top: auto;
+}
+
+.bento-rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.bento-row {
+  display: grid;
+  gap: 0.28rem;
+  padding: 0.8rem 0.65rem;
+  border-top: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: inherit;
+  text-decoration: none;
+  transition: background var(--hover-dur) var(--hover-ease),
+    transform var(--hover-dur) var(--hover-ease),
+    box-shadow var(--hover-dur) var(--hover-ease);
+}
+
+/* .expandable-block declares display:block further down the sheet, so out-specify it. */
+.expandable-block.bento-row {
+  display: grid;
+}
+
+.bento-row:first-child {
+  border-top: 0;
+  padding-top: 0.2rem;
+}
+
+/*
+ * Mirrors the transform shape that .reveal.in-view leaves behind. Matching function
+ * lists let the browser interpolate component-wise instead of decomposing matrices,
+ * which is what keeps the slide clean when the pointer crosses between rows.
+ */
+a.bento-row:hover {
+  background: var(--surface-hover);
+  box-shadow: var(--shadow-soft);
+  transform: translate3d(7px, var(--ty, 0px), 0) scale(1) rotateX(0deg) rotateY(0deg);
+}
+
+/* Muted copy warms up over the same curve, so the row eases in as a whole. */
+.bento-row-meta,
+.bento-row-dates,
+.bento-row-blurb,
+.bento-row-result {
+  transition: color var(--hover-dur) var(--hover-ease);
+}
+
+a.bento-row:hover .bento-row-meta,
+a.bento-row:hover .bento-row-dates,
+a.bento-row:hover .bento-row-blurb {
+  color: var(--text);
+}
+
+.bento-row-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+}
+
+.bento-row-main {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.bento-row-meta {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.bento-row-dates {
+  font-size: 0.76rem;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.bento-row-blurb {
+  margin: 0.2rem 0 0;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+/* Label left, detail right on a single baseline. */
+.bento-row-inline {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: 0.9rem;
+}
+
+.bento-row-inline .bento-row-meta {
+  text-align: right;
+}
+
+/* Title and placing share a line, entrant count sits underneath. */
+.bento-row-award {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  column-gap: 0.9rem;
+}
+
+.bento-row-result {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.bento-row-award .bento-row-meta {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 1020px) {
+  .bento-4,
+  .bento-5,
+  .bento-6,
+  .bento-7,
+  .bento-8 {
+    grid-column: span 6;
+  }
+}
+
+@media (max-width: 760px) {
+  .home-bento,
+  .bento-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bento-4,
+  .bento-5,
+  .bento-6,
+  .bento-7,
+  .bento-8,
+  .bento-12 {
+    grid-column: span 1;
+  }
+}
+
+/*
+ * Tile parts shared by the projects, achievements, and contact grids. They extend the
+ * bento vocabulary above rather than introducing a second card system per page.
+ */
+
+/* Item count, sat opposite a tile heading. */
+.bento-count {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* One-line framing under a heading; quieter than .bento-lead. */
+.bento-note {
+  margin: -0.4rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--text-muted);
+  max-width: 54ch;
+}
+
+.bento-pills {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: start;
+  gap: 0.5rem;
+}
+
+/* Wide tiles run their rows in two columns so a long list stays one screenful. */
+.bento-rows-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: clamp(1.2rem, 3vw, 2.6rem);
+}
+
+.bento-rows-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: clamp(1.2rem, 2.6vw, 2.2rem);
+}
+
+/* Cells of the opening row all sit at the top, so none of them draws a divider. */
+.bento-rows-2 > .bento-row:nth-child(-n + 2),
+.bento-rows-2 > .entry-card:nth-child(-n + 2),
+.bento-rows-3 > .bento-row:nth-child(-n + 3),
+.bento-rows-3 > .entry-card:nth-child(-n + 3) {
+  border-top: 0;
+  padding-top: 0.2rem;
+}
+
+.bento-row-number {
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Blurb lengths vary a lot, and unclamped they leave a two-column grid ragged. */
+.bento-row-project .bento-row-blurb,
+.bento-row-entry .bento-row-blurb {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
+/*
+ * Competition rows that carry an external submission sit in a small shell so the Devpost
+ * / GitHub link can live beside the detail link without nesting anchors.
+ */
+.entry-card {
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.entry-card > .bento-row {
+  border-top: 0;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.entry-card:not(:has(.entry-card-external)) > .bento-row {
+  border-radius: var(--radius);
+}
+
+.entry-card-external {
+  justify-self: start;
+  margin: 0 0.65rem 0.55rem;
+  padding: 0.15rem 0;
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  text-decoration: none;
+  transition: color var(--hover-dur-fast) var(--hover-ease);
+}
+
+.entry-card-external:hover {
+  color: var(--accent-hover);
+}
+
+@media (max-width: 1180px) {
+  .bento-rows-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .bento-rows-3 > .bento-row:nth-child(3),
+  .bento-rows-3 > .entry-card:nth-child(3) {
+    border-top: 1px solid var(--line);
+    padding-top: 0.8rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .bento-rows-2,
+  .bento-rows-3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bento-rows-2 > .bento-row:nth-child(2),
+  .bento-rows-2 > .entry-card:nth-child(2),
+  .bento-rows-3 > .bento-row:nth-child(2),
+  .bento-rows-3 > .entry-card:nth-child(2) {
+    border-top: 1px solid var(--line);
+    padding-top: 0.8rem;
+  }
+}
+
+/* Wins: the one place on the site that gets real cards, since placings deserve weight. */
+/* Every win on one line, so the run reads as a single row rather than a stack of them. */
+.win-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: clamp(0.7rem, 1.2vw, 1rem);
+}
+
+@media (max-width: 1240px) {
+  .win-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(0.8rem, 1.6vw, 1.15rem);
+  }
+}
+
+@media (max-width: 1080px) {
+  .win-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .win-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.win-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-soft);
+  transition: transform var(--hover-dur) var(--hover-ease),
+    box-shadow var(--hover-dur) var(--hover-ease),
+    border-color var(--hover-dur) var(--hover-ease);
+}
+
+.win-card:hover {
+  transform: translate3d(0, -4px, 0);
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow-card);
+}
+
+.expandable-block.win-card-link {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 1rem 1.05rem 1.15rem;
+}
+
+/* The placing is the headline; the event name reads underneath it. */
+.win-card-result {
+  font-size: clamp(1.15rem, 1.9vw, 1.45rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--accent);
+}
+
+.win-card-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.win-card-meta {
+  font-size: 0.76rem;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.win-card-blurb {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  margin: 0.35rem 0 0;
+  font-size: 0.86rem;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+/* Kept outside the card link so the two targets never nest. */
+.win-card-external {
+  padding: 0.6rem 1.05rem 0.72rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  text-decoration: none;
+  transition: background var(--hover-dur-fast) var(--hover-ease),
+    color var(--hover-dur-fast) var(--hover-ease);
+}
+
+.win-card-external:hover {
+  background: var(--surface-hover);
+  color: var(--accent-hover);
+}
+
+/* Entries per year, as a small bar chart instead of another list. */
+.year-bars {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.year-bar {
+  display: grid;
+  grid-template-columns: 2.9rem minmax(0, 1fr) 1.5rem;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.year-bar-label {
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.year-bar-track {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--surface-hover);
+}
+
+.year-bar-fill {
+  display: block;
+  width: var(--fill, 0%);
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent-green), var(--accent));
+  transform-origin: left center;
+}
+
+/*
+ * The wipe is keyed off the reveal classes rather than running on load, so the bars
+ * draw as the tile arrives. Without the reveal script they simply render full.
+ */
+.year-bar.reveal .year-bar-fill {
+  transform: scaleX(0);
+}
+
+.year-bar.in-view .year-bar-fill {
+  animation: yearBarGrow 820ms var(--hover-ease) 140ms forwards;
+}
+
+.year-bar-value {
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-align: right;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes yearBarGrow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .year-bar.reveal .year-bar-fill {
+    transform: none;
+  }
+
+  .year-bar.in-view .year-bar-fill {
+    animation: none;
+  }
+}
+
+/* Contact */
+.contact-mail {
+  align-self: start;
+  padding-bottom: 0.18rem;
+  border-bottom: 1px solid var(--line-strong);
+  font-size: clamp(1.15rem, 2.4vw, 1.7rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  text-decoration: none;
+  transition: color var(--hover-dur) var(--hover-ease),
+    border-color var(--hover-dur) var(--hover-ease);
+}
+
+.contact-mail:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.contact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.contact-form {
+  display: grid;
+  gap: 1.15rem;
+  justify-items: start;
+}
+
+.contact-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem 1.25rem;
+  width: 100%;
+}
+
+.contact-field-wide {
+  grid-column: 1 / -1;
+}
+
+.contact-field label {
+  display: block;
+  margin-bottom: 0.32rem;
+}
+
+.contact-field-wide textarea {
+  min-height: 150px;
+}
+
+@media (max-width: 620px) {
+  .contact-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.home-block {
+  display: grid;
+  gap: 1.1rem;
+}
+
+.home-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.home-head h2 {
+  margin: 0;
+  font-size: clamp(1.15rem, 1.6vw, 1.4rem);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--text);
+  border-left: 3px solid var(--accent-green);
+  padding-left: 0.8rem;
+}
+
+.home-head-link {
+  display: inline-block;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color var(--hover-dur-fast) var(--hover-ease),
+    transform var(--hover-dur) var(--hover-ease);
+}
+
+.home-head-link:hover {
+  transform: translateX(3px);
+}
+
+.home-head-link:hover {
+  color: var(--text);
+}
+
+.home-card {
+  padding: 1.5rem 1.6rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+  text-align: left;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+a.home-card:hover {
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow-card);
+  transform: translateY(-2px);
+}
+
+.home-about p {
+  margin: 0;
+  color: var(--text-muted);
+  max-width: 80ch;
+  font-size: 1.02rem;
+  line-height: 1.6;
+}
+
+.home-about-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.9rem;
+}
+
+.home-duo {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.6rem;
+  align-items: start;
+}
+
+.home-col {
+  display: grid;
+  gap: 0.9rem;
+  align-content: start;
+}
+
+.home-entry-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.home-entry-top h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  letter-spacing: -0.015em;
+  color: var(--text);
+}
+
+.home-tag {
+  flex: none;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface-soft);
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.home-entry-dates {
+  margin: 0.35rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  letter-spacing: 0.03em;
+}
+
+.home-entry-role {
+  margin: 0.4rem 0 0;
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.home-entry-blurb {
+  margin: 0.6rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.94rem;
+  line-height: 1.55;
+}
+
+.home-entry-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.7rem;
+}
+
+.home-skills {
+  display: grid;
+  grid-template-columns: minmax(0, 420px) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(1.2rem, 3vw, 2.6rem);
+}
+
+.home-skills-cloud {
+  position: relative;
+  width: 100%;
+}
+
+/*
+ * Narrow variant for the Tools & Engines tile: the cloud sits above its detail panel
+ * instead of beside it, since the tile is a column rather than a band.
+ */
+.tool-cloud {
+  display: grid;
+  justify-items: center;
+  gap: 0.4rem;
+}
+
+.tool-cloud .skill-detail {
+  max-width: none;
+  width: 100%;
+  text-align: center;
+}
+
+.tool-cloud .skill-detail h3 {
+  font-size: 1.2rem;
+}
+
+.tool-cloud .skill-detail-links {
+  justify-content: center;
+}
+
+.tool-cloud .skill-detail-link {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.82rem;
+}
+
+.skill-detail {
+  max-width: 620px;
+}
+
+/* Each element of a freshly picked skill slides up a beat after the one before it. */
+/* `backwards`, not `both`: holding the end keyframe would outrank the links' hover transform. */
+.skill-detail-body > * {
+  animation: skillDetailIn 460ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.skill-detail-body > *:nth-child(2) { animation-delay: 60ms; }
+.skill-detail-body > *:nth-child(3) { animation-delay: 120ms; }
+.skill-detail-body > *:nth-child(4) { animation-delay: 180ms; }
+
+.skill-detail-link {
+  animation: skillDetailIn 420ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation-delay: calc(220ms + var(--link-index, 0) * 70ms);
+}
+
+@keyframes skillDetailIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.skill-detail h3 {
+  margin: 0 0 0.55rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--text);
+}
+
+.skill-detail-tldr {
+  margin: 0;
+  max-width: 52ch;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.skill-detail-label {
+  margin: 1.5rem 0 0.7rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.skill-detail-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.skill-detail-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: var(--text);
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: border-color var(--hover-dur-fast) var(--hover-ease),
+    background var(--hover-dur-fast) var(--hover-ease),
+    transform var(--hover-dur) var(--hover-ease);
+}
+
+.skill-detail-link span {
+  color: var(--text-muted);
+  transition: transform var(--hover-dur) var(--hover-ease),
+    color var(--hover-dur-fast) var(--hover-ease);
+}
+
+.skill-detail-link:hover {
+  border-color: var(--line-strong);
+  background: var(--surface-hover);
+  transform: translateY(-2px);
+}
+
+.skill-detail-link:hover span {
+  color: var(--text);
+  transform: translateX(4px);
+}
+
+.icon-cloud {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+/* The cursor is driven from JS so it can switch to a pointer over a hit-tested icon. */
+.icon-cloud-canvas {
+  touch-action: none;
+  cursor: grab;
+}
+
+/*
+ * Keeps the icon names available to screen readers and crawlers, and gives keyboard
+ * users a way to select a skill. Tabbing into it reveals the list over the canvas.
+ */
+.icon-cloud-legend {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  list-style: none;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.icon-cloud-legend button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.icon-cloud-legend:focus-within {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  height: 100%;
+  padding: 1rem;
+  overflow: auto;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  clip-path: none;
+  white-space: normal;
+}
+
+.icon-cloud-legend:focus-within button {
+  padding: 0.3rem 0.65rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.icon-cloud-legend:focus-within button[aria-pressed="true"] {
+  border-color: var(--line-strong);
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+@media (max-width: 860px) {
+  .home-skills {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+  }
+
+  .skill-detail {
+    text-align: center;
+  }
+
+  .skill-detail-links {
+    justify-content: center;
+  }
+}
+
+.home-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.1rem;
+}
+
+.home-card.home-tile {
+  display: grid;
+  gap: 0.35rem;
+  align-content: start;
+}
+
+.home-tile-label {
+  color: var(--text);
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.home-tile-meta {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+
+.home-card.home-award {
+  display: grid;
+  gap: 0.35rem;
+  align-content: start;
+}
+
+.home-award h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  color: var(--text);
+  letter-spacing: -0.015em;
+}
+
+.home-award-result {
+  margin: 0;
+  color: var(--text);
+  font-size: 0.98rem;
+  font-weight: 500;
+}
+
+.home-award-size {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/*
+ * Detail pages open on a small back link rather than a title, so they skip the top
+ * gutter entirely. Body already pads for the fixed nav, so a few pixels here is enough
+ * to sit the button just under the logo and let the gallery fill the viewport.
+ */
+main:has(.detail-page) {
+  padding-top: 1.8rem;
+}
+
+.detail-page {
+  display: grid;
+  gap: 1.6rem;
+  width: 100%;
+}
+
+/* Negative margin tucks the title block up against the back link without shrinking
+   the gap between the header and the gallery below it. */
+.detail-page-nav {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: -0.95rem;
+}
+
+.detail-page-nav .btn {
+  padding: 0.34rem 0.85rem;
+  font-size: 0.82rem;
+}
+
+.detail-page-header {
+  display: grid;
+  justify-items: start;
+  gap: 0.55rem;
+  text-align: left;
+  padding: 0;
+}
+
+.detail-page-header .badge {
+  justify-self: start;
+}
+
+.detail-page-title {
+  margin: 0;
+  font-size: clamp(2.4rem, 5.4vw, 4rem);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+  color: var(--text);
+}
+
+.detail-page-meta {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 1.02rem;
+  letter-spacing: 0.01em;
+}
+
+.detail-page-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(17rem, 21rem);
+  gap: 1.75rem;
+  align-items: start;
+}
+
+.detail-page-gallery {
+  padding: 1.1rem;
+}
+
+.detail-page-gallery .detail-gallery {
+  width: 100%;
+  min-height: 26rem;
+  height: clamp(28rem, 64vh, 46rem);
+  flex: none;
+}
+
+.detail-page-gallery .detail-gallery-image {
+  object-fit: contain;
+}
+
+.detail-page-side {
+  display: grid;
+  gap: 1.1rem;
+  position: sticky;
+  top: calc(var(--nav-height) + 1.5rem);
+}
+
+.detail-page-side .section {
+  padding: 1.15rem 1.3rem;
+}
+
+.detail-page-side .section h2 {
+  font-size: 0.84rem;
+  margin-bottom: 0.7rem;
+}
+
+.detail-page-summary-card p {
+  margin: 0;
+  max-width: none;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.detail-page-notes {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.detail-page-notes li {
+  position: relative;
+  padding-left: 1rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.detail-page-notes li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.58em;
+  width: 0.33rem;
+  height: 0.33rem;
+  border-radius: 999px;
+  background: var(--accent-green);
+}
+
+.detail-page-links {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.detail-page-links .btn {
+  width: 100%;
+  justify-content: center;
 }
 
 .section {
@@ -1513,20 +3035,27 @@ html[data-theme="dark"] .achievement-track .achievement-card h2 {
   text-align: center;
 }
 
+/*
+ * No entrance animation here: these headers are .hero-flat, so the shared intro script
+ * drives them the same way it drives the homepage hero. A second animation would set
+ * opacity itself and cancel that out.
+ */
 .page-header h1 {
-  margin: 0 0 0.32rem;
+  margin: 0 0 0.5rem;
   font-size: clamp(2.35rem, 6.2vw, 3.85rem);
   line-height: 1.05;
   letter-spacing: -0.03em;
   color: var(--text);
-  animation: textFadeUp 0.7s ease both;
 }
 
 .page-header p {
   margin: 0;
   color: var(--text-muted);
   text-align: center;
-  animation: textFadeUp 0.6s ease both 0.08s;
+}
+
+.page-header .hero-kicker {
+  margin: 0 0 0.55rem;
 }
 
 .btn {
@@ -1802,6 +3331,7 @@ footer p { margin: 0 0 0.24rem; }
   color: inherit;
   font: inherit;
   text-align: inherit;
+  text-decoration: none;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
@@ -2008,7 +3538,7 @@ footer p { margin: 0 0 0.24rem; }
 }
 
 .detail-gallery-image {
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
 }
 
@@ -2166,14 +3696,51 @@ footer p { margin: 0 0 0.24rem; }
 }
 
 /* Smooth reveal animation */
+/* Every route entrance gets the same short settle so navigation feels continuous. */
+.page-shell {
+  animation: pageEnter 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 9px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 .reveal {
   opacity: 0;
   --reveal-x: 0px;
   --reveal-y: 18px;
   --reveal-s: 0.98;
-  transform: translate3d(var(--reveal-x), calc(var(--reveal-y) + var(--ty, 0px)), 0) scale(var(--reveal-s)) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  /* Named once so hover states can re-assert the exact same value, see below. */
+  --reveal-transform: translate3d(var(--reveal-x), calc(var(--reveal-y) + var(--ty, 0px)), 0) scale(var(--reveal-s)) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transform: var(--reveal-transform);
+}
+
+/*
+ * The slow entrance easing only applies while an element is actually entering.
+ * Once it has landed the element gets `reveal-done` and this stops matching, handing
+ * transitions back to the component so hover responds immediately instead of
+ * inheriting a 560ms curve and appearing to queue behind the previous card.
+ */
+.reveal:not(.reveal-done) {
   transition: opacity 0.56s cubic-bezier(0.22, 1, 0.36, 1), transform 0.56s cubic-bezier(0.22, 1, 0.36, 1);
   transition-delay: var(--reveal-delay, 0ms);
+}
+
+/*
+ * An entrance still in flight owns the transform. Giving a hovered element a different
+ * target would restart the transition, delay included, so the card freezes under the
+ * cursor and the ones staggered behind it look stuck too. The element stays clickable;
+ * only its lift is held back until it has landed.
+ */
+.reveal:not(.reveal-done):hover {
+  transform: var(--reveal-transform);
 }
 
 .reveal[data-reveal="left"] {
@@ -2207,13 +3774,16 @@ footer p { margin: 0 0 0.24rem; }
   --reveal-y: 0px;
   --reveal-s: 1;
   opacity: 1;
-  transform: translate3d(var(--reveal-x), calc(var(--reveal-y) + var(--ty, 0px)), 0) scale(var(--reveal-s)) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transform: var(--reveal-transform);
 }
 
 /* Stronger fade-in for achievements cards */
 .achievement-card.reveal {
   --reveal-y: 32px;
   --reveal-s: 0.94;
+}
+
+.achievement-card.reveal:not(.reveal-done) {
   transition: opacity 0.72s cubic-bezier(0.16, 1, 0.3, 1), transform 0.72s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -2233,7 +3803,8 @@ footer p { margin: 0 0 0.24rem; }
   transition: opacity 0.42s cubic-bezier(0.22, 1, 0.36, 1), transform 0.42s cubic-bezier(0.22, 1, 0.36, 1), filter 0.42s ease;
 }
 
-.hero-flat .intro-item {
+.hero-flat .intro-item,
+.intro-scope .intro-item {
   opacity: 0;
   --intro-x: 0px;
   --intro-y: 0px;
@@ -2242,13 +3813,19 @@ footer p { margin: 0 0 0.24rem; }
   transition: opacity 0.62s cubic-bezier(0.16, 1, 0.3, 1), transform 0.72s cubic-bezier(0.16, 1, 0.3, 1), filter 0.72s ease;
 }
 
-.hero-flat .intro-item[data-reveal="left"] { --intro-x: -44px; }
-.hero-flat .intro-item[data-reveal="right"] { --intro-x: 44px; }
-.hero-flat .intro-item[data-reveal="top"] { --intro-y: -34px; }
-.hero-flat .intro-item[data-reveal="bottom"] { --intro-y: 34px; }
+.hero-flat .intro-item[data-reveal="left"],
+.intro-scope .intro-item[data-reveal="left"] { --intro-x: -44px; }
+.hero-flat .intro-item[data-reveal="right"],
+.intro-scope .intro-item[data-reveal="right"] { --intro-x: 44px; }
+.hero-flat .intro-item[data-reveal="top"],
+.intro-scope .intro-item[data-reveal="top"] { --intro-y: -34px; }
+.hero-flat .intro-item[data-reveal="bottom"],
+.intro-scope .intro-item[data-reveal="bottom"] { --intro-y: 34px; }
 .hero-flat .intro-item[data-reveal="scale"] { --intro-y: 0px; --intro-x: 0px; transform: scale(1.28); }
+.intro-scope .intro-item[data-reveal="scale"] { --intro-y: 0px; --intro-x: 0px; transform: scale(1.18); }
 
-.hero-flat .intro-item.intro-in {
+.hero-flat .intro-item.intro-in,
+.intro-scope .intro-item.intro-in {
   opacity: 1;
   transform: translate3d(0, 0, 0) scale(1);
   filter: blur(0);
@@ -2415,6 +3992,34 @@ textarea:focus {
   .experience-grid {
     grid-template-columns: 1fr 1fr;
   }
+
+  .home-duo {
+    grid-template-columns: 1fr;
+    gap: 2.2rem;
+  }
+
+  .home-grid-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .detail-page-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-page-gallery .detail-gallery {
+    min-height: 18rem;
+    height: clamp(18rem, 46vh, 28rem);
+  }
+}
+
+@media (max-width: 720px) {
+  .home-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .home-grid-3 {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 760px) {
@@ -2433,6 +4038,12 @@ textarea:focus {
   }
 
   .nav-toggle { display: inline-flex; }
+
+  /* Nothing to swap at this size: the menu is a dropdown panel and the dock never parks,
+     so the wrapper should not hold a slot in the bar. */
+  .nav-swap {
+    display: contents;
+  }
 
   nav ul::before {
     display: none;

@@ -5,67 +5,6 @@ if ("scrollRestoration" in history) {
 }
 window.scrollTo(0, 0);
 
-// Temporarily disable all pointer interactions until initial animations complete.
-(function () {
-  var root = document.documentElement;
-  var unlockTimer = null;
-  var INTERACTION_BUFFER_MS = 0.01;
-  var interactionLockSelectors = ".section, .card:not(.project-item):not(.achievement-card), .contact-block, .form-section, .fact-card, .mini-card, .experience-card, .achievement-banner, .award-mini, .timeline-card, .chip, .skill-cloud span, .skill-cloud-tag, .expandable-block";
-
-  function getRevealIntroDurationMs() {
-    var revealTargets = document.querySelectorAll(interactionLockSelectors);
-    if (!revealTargets.length) return 0;
-
-    var maxRevealDelay = Math.min((revealTargets.length - 1) * 45, 560);
-    var revealTransitionMs = 560;
-    return maxRevealDelay + revealTransitionMs;
-  }
-
-  function getHeroIntroDurationMs() {
-    var prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReducedMotion) return 0;
-
-    var hero = document.querySelector(".hero-flat");
-    if (!hero) return 0;
-
-    var introItems = hero.querySelectorAll(".intro-item");
-    if (!introItems.length) return 0;
-
-    var elapsed = 130;
-    introItems.forEach(function (_, index) {
-      elapsed += index === introItems.length - 2 ? 210 : 140;
-    });
-
-    var heroCompleteDelay = 120;
-    var settleTransitionMs = 720;
-    return elapsed + heroCompleteDelay + settleTransitionMs;
-  }
-
-  function scheduleInteractionUnlock() {
-    root.classList.add("ui-locked");
-
-    if (unlockTimer) {
-      window.clearTimeout(unlockTimer);
-    }
-
-    var totalDuration = Math.max(getRevealIntroDurationMs(), getHeroIntroDurationMs());
-    unlockTimer = window.setTimeout(function () {
-      root.classList.remove("ui-locked");
-    }, Math.max(1, totalDuration + INTERACTION_BUFFER_MS));
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", scheduleInteractionUnlock, { once: true });
-  } else {
-    scheduleInteractionUnlock();
-  }
-
-  // Ensure lock/release also works when returning from bfcache.
-  window.addEventListener("pageshow", function () {
-    scheduleInteractionUnlock();
-  });
-})();
-
 // Mobile nav toggle
 (function () {
   var toggle = document.querySelector(".nav-toggle");
@@ -73,7 +12,6 @@ window.scrollTo(0, 0);
   if (!toggle || !menu) return;
   var body = document.body;
   var links = menu.querySelectorAll("a");
-  var activeLink = menu.querySelector("a.active") || links[0];
   var mobileQuery = window.matchMedia("(max-width: 640px)");
 
   function setMenuState(open) {
@@ -84,20 +22,6 @@ window.scrollTo(0, 0);
     }
   }
 
-  function moveNavPill(target) {
-    if (!target) return;
-    // Disabled on mobile where menu turns into full-width list
-    if (window.matchMedia("(max-width: 640px)").matches) return;
-    var menuRect = menu.getBoundingClientRect();
-    var targetRect = target.getBoundingClientRect();
-    menu.style.setProperty("--nav-pill-x", targetRect.left - menuRect.left + "px");
-    menu.style.setProperty("--nav-pill-w", targetRect.width + "px");
-  }
-
-  if (activeLink) {
-    moveNavPill(activeLink);
-  }
-
   toggle.addEventListener("click", function () {
     var open = !menu.classList.contains("open");
     setMenuState(open);
@@ -105,26 +29,12 @@ window.scrollTo(0, 0);
 
   // Close menu when a link is clicked (for in-page nav on mobile)
   links.forEach(function (link) {
-    link.addEventListener("mouseenter", function () {
-      moveNavPill(link);
-    });
-
-    link.addEventListener("focus", function () {
-      moveNavPill(link);
-    });
-
     link.addEventListener("click", function () {
-      activeLink = link;
       setMenuState(false);
     });
   });
 
-  menu.addEventListener("mouseleave", function () {
-    moveNavPill(activeLink);
-  });
-
   window.addEventListener("resize", function () {
-    moveNavPill(activeLink);
     if (!mobileQuery.matches) {
       setMenuState(false);
     }
@@ -167,8 +77,13 @@ window.scrollTo(0, 0);
   var revealObserver = null;
   var prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var REVEAL_TRANSITION_MS = 560;
-  var INTERACTION_BUFFER_MS = 0.01;
-  var revealLockSelectors = ".section, .card:not(.project-item):not(.achievement-card), .contact-block, .form-section, .fact-card, .mini-card, .experience-card, .achievement-banner, .award-mini, .timeline-card, .chip, .skill-cloud span, .skill-cloud-tag, .expandable-block";
+  /* A hair past the end of the transition, so `reveal-done` never lands mid-frame. */
+  var REVEAL_DONE_BUFFER_MS = 20;
+  var revealSelectors =
+    ".section, .card:not(.project-item):not(.achievement-card), .contact-block, .form-section, .fact-card, .mini-card, .experience-card, .achievement-banner, .award-mini, .timeline-card, .chip, .skill-cloud span, .skill-cloud-tag, .expandable-block:not(.win-card-link), .bento, .bento-row, .win-card, .year-bar, .stats-band, .dock-anchor, .home-head, .track-heading, .skill-detail, .msg-success, .msg-error, .footer-links, footer p";
+  /* Cards inside a shared parent cascade instead of all landing at once. */
+  var STAGGER_STEP_MS = 65;
+  var STAGGER_MAX_MS = 420;
 
   function parseDelayMs(value) {
     if (!value) return 0;
@@ -176,21 +91,8 @@ window.scrollTo(0, 0);
     return Number.isFinite(numeric) ? numeric : 0;
   }
 
-  function getMaxNestedRevealDelayMs(container) {
-    if (!container || !container.querySelectorAll) return 0;
-    var maxDelay = 0;
-    var nestedRevealEls = container.querySelectorAll(".reveal");
-    nestedRevealEls.forEach(function (el) {
-      var delay = parseDelayMs(el.style.getPropertyValue("--reveal-delay"));
-      if (delay > maxDelay) {
-        maxDelay = delay;
-      }
-    });
-    return maxDelay;
-  }
-
   function setupPageReveals() {
-    var revealTargets = document.querySelectorAll(revealLockSelectors);
+    var revealTargets = document.querySelectorAll(revealSelectors);
     if (!revealTargets.length) return;
 
     if (revealObserver) {
@@ -198,11 +100,15 @@ window.scrollTo(0, 0);
     }
 
     // Reset state first so animations replay whenever a new page loads.
-    revealTargets.forEach(function (el, index) {
-      el.classList.remove("reveal", "in-view");
-      el.classList.add("reveal-lock");
-      // Keep stagger subtle so cards animate almost immediately on entry.
-      el.style.setProperty("--reveal-delay", Math.min(index * 16, 120) + "ms");
+    var groupCounts = new Map();
+    revealTargets.forEach(function (el) {
+      el.classList.remove("reveal", "in-view", "reveal-done");
+
+      // Delay is per sibling group, so each row/grid cascades on its own.
+      var parent = el.parentElement;
+      var position = groupCounts.get(parent) || 0;
+      groupCounts.set(parent, position + 1);
+      el.style.setProperty("--reveal-delay", Math.min(position * STAGGER_STEP_MS, STAGGER_MAX_MS) + "ms");
     });
 
     // Two-frame setup:
@@ -220,21 +126,24 @@ window.scrollTo(0, 0);
               if (entry.isIntersecting) {
                 entry.target.classList.add("in-view");
                 if (prefersReducedMotion) {
-                  entry.target.classList.remove("reveal-lock");
+                  entry.target.classList.add("reveal-done");
                 } else {
-                  // Keep parent blocks locked until nested staggered reveals are done too.
-                  var nestedDelay = getMaxNestedRevealDelayMs(entry.target);
-                  var unlockDelay = REVEAL_TRANSITION_MS + nestedDelay + INTERACTION_BUFFER_MS;
+                  // Counted from the element's own stagger delay, so the handover waits for
+                  // this entrance to finish rather than for the first one in the group.
+                  var ownDelay = parseDelayMs(entry.target.style.getPropertyValue("--reveal-delay"));
                   window.setTimeout(function () {
-                    entry.target.classList.remove("reveal-lock");
-                  }, unlockDelay);
+                    // Hands transitions back to the element's own rules so hover feels instant.
+                    entry.target.classList.add("reveal-done");
+                  }, ownDelay + REVEAL_TRANSITION_MS + REVEAL_DONE_BUFFER_MS);
                 }
                 revealObserver.unobserve(entry.target);
               }
             });
           },
-          // Trigger sooner as elements begin entering the viewport.
-          { threshold: 0.02, rootMargin: "0px 0px -4% 0px" }
+          // Pre-trigger just below the fold so content has settled by the time it is read.
+          // A negative bottom margin would leave anything pinned to the bottom of the page
+          // (the footer at max scroll) permanently unrevealed.
+          { threshold: 0.02, rootMargin: "0px 0px 10% 0px" }
         );
 
         revealTargets.forEach(function (el) {
@@ -267,10 +176,7 @@ window.scrollTo(0, 0);
     hero.classList.add("hero-complete");
   }
 
-  function runHeroIntro() {
-    var hero = document.querySelector(".hero-flat");
-    if (!hero) return;
-
+  function playIntro(hero) {
     var introItems = hero.querySelectorAll(".intro-item");
     if (!introItems.length) return;
 
@@ -296,6 +202,11 @@ window.scrollTo(0, 0);
     window.setTimeout(function () {
       hero.classList.add("hero-complete");
     }, elapsed + 120);
+  }
+
+  // Every page opens with the same choreography: the home hero plus any .intro-scope header.
+  function runHeroIntro() {
+    document.querySelectorAll(".hero-flat, .intro-scope").forEach(playIntro);
   }
 
   if (document.readyState === "loading") {
@@ -398,7 +309,10 @@ window.scrollTo(0, 0);
 // Pointer-reactive soft highlight on cards and sections
 (function () {
   var prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var selector = ".section:not(.skill-cloud-panel), .card, .skill-group, .contact-block, .fact-card, .mini-card, .experience-card, .chip, .expandable-block:not(.skill-cloud-tag)";
+  // Bento rows are excluded: a tilt reads as noise on a thin list row, and tracking the
+  // pointer would fight the slide transition as you move along the row.
+  var selector =
+    ".section:not(.skill-cloud-panel), .card, .skill-group, .contact-block, .fact-card, .mini-card, .experience-card, .chip, .expandable-block:not(.skill-cloud-tag):not(.bento-row), .bento";
 
   function bindInteractiveCard(el) {
     if (!el || el.dataset.chromaBound === "1") return;
@@ -406,6 +320,12 @@ window.scrollTo(0, 0);
 
     if (prefersReducedMotion) {
       return;
+    }
+
+    // The entrance transform reads --rx/--ry, so writing them while the element is still
+    // arriving would retarget that transition and stall the entrance under the cursor.
+    function isRevealing() {
+      return el.classList.contains("reveal") && !el.classList.contains("reveal-done");
     }
 
     el.addEventListener("mousemove", function (event) {
@@ -418,6 +338,7 @@ window.scrollTo(0, 0);
       el.style.setProperty("--my", y + "%");
       el.style.setProperty("--mouse-x", event.clientX - rect.left + "px");
       el.style.setProperty("--mouse-y", event.clientY - rect.top + "px");
+      if (isRevealing()) return;
       el.style.setProperty("--ry", (dx * 3).toFixed(2) + "deg");
       el.style.setProperty("--rx", (-dy * 3).toFixed(2) + "deg");
     });
@@ -427,6 +348,7 @@ window.scrollTo(0, 0);
       el.style.setProperty("--my", "-20%");
       el.style.setProperty("--mouse-x", "50%");
       el.style.setProperty("--mouse-y", "50%");
+      if (isRevealing()) return;
       el.style.setProperty("--rx", "0deg");
       el.style.setProperty("--ry", "0deg");
     });
@@ -476,13 +398,10 @@ window.scrollTo(0, 0);
 
 // Animate long paragraphs word-by-word on scroll (About Me)
 (function () {
-  // Keep projects/achievements card pages on card-level animations only.
-  if (document.querySelector(".projects-gallery, .achievement-tracks")) {
-    return;
-  }
-
+  // Header copy marked .intro-item is already driven by the hero intro; splitting it into
+  // words would layer a second entrance on top of that one.
   var autoAnimateTargets = document.querySelectorAll(
-    ".page-header p, .card:not(.project-item):not(.achievement-card) p, .card:not(.project-item):not(.achievement-card) .meta, .contact-block h2, .form-section h2, .achievement-banner"
+    ".page-header p:not(.intro-item), .card:not(.project-item):not(.achievement-card) p, .card:not(.project-item):not(.achievement-card) .meta, .achievement-banner"
   );
   autoAnimateTargets.forEach(function (el) {
     el.classList.add("long-animate");
@@ -533,68 +452,3 @@ window.scrollTo(0, 0);
   });
 })();
 
-// Dedicated on-scroll fade-in for achievements and projects cards
-(function () {
-  var prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var observer = null;
-  var revealCount = 0;
-
-  function setupCardsFade() {
-    var cards = document.querySelectorAll(".achievement-track .achievement-card, .projects-gallery .project-item");
-    if (!cards.length || prefersReducedMotion) return;
-
-    if (observer) {
-      observer.disconnect();
-    }
-
-    revealCount = 0;
-
-    cards.forEach(function (card) {
-      card.classList.remove("ach-fade", "in");
-      card.classList.add("ach-fade");
-      card.style.removeProperty("--card-stagger");
-    });
-
-    observer = new IntersectionObserver(
-      function (entries) {
-        var visibleEntries = entries
-          .filter(function (entry) {
-            return entry.isIntersecting;
-          })
-          .sort(function (a, b) {
-            var topDiff = a.boundingClientRect.top - b.boundingClientRect.top;
-            if (Math.abs(topDiff) > 2) return topDiff;
-            return a.boundingClientRect.left - b.boundingClientRect.left;
-          });
-
-        visibleEntries.forEach(function (entry) {
-          if (!entry.isIntersecting) return;
-          var delay = Math.min(revealCount * 40, 400);
-          revealCount += 1;
-          window.setTimeout(function () {
-            entry.target.classList.add("in");
-          }, delay);
-          observer.unobserve(entry.target);
-        });
-      },
-      { threshold: 0.06, rootMargin: "0px 0px 16% 0px" }
-    );
-
-    cards.forEach(function (card) {
-      observer.observe(card);
-    });
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", setupCardsFade, { once: true });
-  } else {
-    setupCardsFade();
-  }
-
-  // Re-run on client-side route switches and bfcache restores.
-  window.addEventListener("pageshow", function () {
-    window.requestAnimationFrame(function () {
-      setupCardsFade();
-    });
-  });
-})();
