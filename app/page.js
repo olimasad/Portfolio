@@ -19,7 +19,7 @@ const experience = [
     org: "Morgan Stanley",
     role: "Technologist IST Intern",
     dates: "2026",
-    badge: "Incoming",
+    badge: "3 mo",
     blurb: "Technology and innovation work inside the IST organization.",
   },
   {

@@ -42,6 +42,7 @@ export default function IconCloud({
   const draggingRef = useRef(false);
   const resumeIdleAtRef = useRef(0);
   const frameRef = useRef(0);
+  const cursorRef = useRef("grab");
 
   const [size, setSize] = useState(maxSize);
   const [iconPositions, setIconPositions] = useState([]);
@@ -50,6 +51,7 @@ export default function IconCloud({
   // thing here a visitor can switch off, and they do it at the OS level.
   const [isPaused, setIsPaused] = useState(false);
   const [targetRotation, setTargetRotation] = useState(null);
+  const [isVisible, setIsVisible] = useState(true);
 
   // Front-most icons sit at radius + half an icon from the centre, so this keeps the sphere inside the canvas.
   const radius = size * 0.33;
@@ -75,6 +77,23 @@ export default function IconCloud({
   useEffect(() => {
     if (!draggingRef.current) pointerRef.current = { x: size / 2, y: size / 2 };
   }, [size]);
+
+  // A cloud that is nowhere near the viewport still costs a canvas redraw per frame,
+  // and that work lands in the middle of the scroll that is carrying it off screen.
+  useEffect(() => {
+    const wrapper = wrapperRef.current;
+    if (!wrapper || typeof IntersectionObserver === "undefined") return undefined;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        setIsVisible(entries[entries.length - 1].isIntersecting);
+      },
+      { rootMargin: "200px 0px" }
+    );
+
+    observer.observe(wrapper);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -223,7 +242,9 @@ export default function IconCloud({
     const deltaY = event.clientY - lastPointerRef.current.y;
     rotationRef.current = {
       x: normalizeAngle(rotationRef.current.x + deltaY * 0.002),
-      y: normalizeAngle(rotationRef.current.y + deltaX * 0.002),
+      // A front icon sits at screen x of -sin(y) * radius, so a rising angle carries the near
+      // face leftward. The horizontal delta is subtracted to keep the face under the pointer.
+      y: normalizeAngle(rotationRef.current.y - deltaX * 0.002),
     };
     lastPointerRef.current = { x: event.clientX, y: event.clientY };
   }
@@ -244,7 +265,7 @@ export default function IconCloud({
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
-    if (!canvas || !ctx || !iconPositions.length) return undefined;
+    if (!canvas || !ctx || !iconPositions.length || !isVisible) return undefined;
 
     const dpr = window.devicePixelRatio || 1;
     canvas.width = Math.round(size * dpr);
@@ -310,7 +331,13 @@ export default function IconCloud({
       });
 
       if (!draggingRef.current) {
-        canvas.style.cursor = hitTest(pointerRef.current.x, pointerRef.current.y) >= 0 ? "pointer" : "grab";
+        // Assigning the same cursor every frame still invalidates style, so only the
+        // transitions between hovering an icon and empty space are written out.
+        const nextCursor = hitTest(pointerRef.current.x, pointerRef.current.y) >= 0 ? "pointer" : "grab";
+        if (nextCursor !== cursorRef.current) {
+          cursorRef.current = nextCursor;
+          canvas.style.cursor = nextCursor;
+        }
       }
 
       const pendingAssets = !imagesLoadedRef.current.every(Boolean);
@@ -331,6 +358,7 @@ export default function IconCloud({
     iconSize,
     isDragging,
     isPaused,
+    isVisible,
     project,
     radius,
     selectedIndex,

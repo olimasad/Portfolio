@@ -149,16 +149,19 @@ a:active {
   50% { text-shadow: 0 0 22px rgba(139, 115, 85, 0.15); }
 }
 
+/*
+ * Deliberately no blur: this runs on every word of a paragraph at once, and dozens of
+ * simultaneous blur animations have to be re-rasterised each frame right as the
+ * paragraph scrolls into view. The fade and rise read the same at this size.
+ */
 @keyframes longWordIn {
   from {
     opacity: 0;
     transform: translateY(12px);
-    filter: blur(3px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
-    filter: blur(0);
   }
 }
 
@@ -278,6 +281,20 @@ html.theme-revealing {
   opacity: 0.22;
 }
 
+/*
+ * The two swaying pieces never stop, and they live in a fixed, full-screen layer. Without
+ * being promoted, each step of the sway invalidated style and repainted that layer on top
+ * of whatever the scroll was already doing.
+ */
+.plant-decor-vine-left,
+.plant-decor-branch-right {
+  will-change: transform;
+}
+
+.plant-decor.decor-paused .plant-decor-piece {
+  animation-play-state: paused;
+}
+
 .plant-decor-vine-left {
   left: clamp(0.75rem, 3vw, 2.5rem);
   bottom: clamp(2rem, 8vh, 5rem);
@@ -374,7 +391,7 @@ main h3,
   background: rgba(139, 115, 85, 0.12);
   filter: blur(13px);
   transition: opacity 0.2s ease;
-  will-change: transform, left, top, opacity;
+  will-change: transform, opacity;
 }
 
 html.modern-cursor-enabled,
@@ -670,12 +687,9 @@ main {
 }
 
 .hero-flat {
-  --hero-parallax: 0px;
   margin-bottom: 1.55rem;
   padding: 0.5rem 0 1rem;
   text-align: center;
-  transform: translateY(var(--hero-parallax));
-  transition: transform 0.35s ease;
 }
 
 .hero-kicker {
@@ -726,9 +740,10 @@ main {
   pointer-events: none;
 }
 
+/* framer-motion sets will-change itself for the duration of each swap, so a standing
+ * declaration here only kept every character promoted between rotations. */
 .staggered-word-rotate-char {
   display: inline-block;
-  will-change: transform, opacity, filter;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -920,7 +935,14 @@ main {
   max-width: 100%;
   height: var(--dock-panel-height);
   margin: 0 auto;
-  padding: 0 0.7rem 0.7rem;
+  /*
+   * Tiles hang off the bottom edge so magnifying one grows it upward, into the headroom the
+   * outer container reserves, rather than pushing the page around. That means the bottom
+   * padding alone decides where the resting row sits: half the leftover height centres it in
+   * the bar at any sizing, where a fixed value left the row noticeably high. The 2px covers
+   * the panel's own top and bottom borders, which the fixed height includes.
+   */
+  padding: 0 0.7rem calc((var(--dock-panel-height) - var(--dock-item-size, 58px) - 2px) / 2);
   border: 1px solid var(--line);
   border-radius: 1.15rem;
   background: var(--surface);
@@ -1063,11 +1085,11 @@ main {
 }
 
 /*
- * Confined to the widths where the dock can actually park, both because the handover is
- * the only thing these rules are for and because an id selector here would otherwise
- * outrank the dropdown transition the menu uses on phones.
+ * Confined to the widths where the menu is a row of inline links, which are the only ones
+ * the parked row stands in for. Below this the menu is a dropdown that hides itself, and an
+ * id selector here would outrank the transition it opens with.
  */
-@media (min-width: 1024px) {
+@media (min-width: 641px) {
   #nav-menu {
     transition: opacity 260ms var(--hover-ease), transform 460ms var(--hover-ease), visibility 0s;
   }
@@ -1157,6 +1179,14 @@ main {
   border-radius: 0;
   background: none;
   box-shadow: none;
+  /*
+   * Held to one line at every width. The inline strip wraps onto a second row on phones,
+   * and inheriting that here would stack the parked row inside a bar that is only tall
+   * enough for one of them.
+   */
+  height: var(--dock-panel-height);
+  flex-wrap: nowrap;
+  row-gap: 0;
 }
 
 .dock-pinned .dock-item {
@@ -2710,13 +2740,18 @@ main:has(.detail-page) {
   color: var(--text-muted);
 }
 
-/* Unified card hover animation across pages */
-.fact-card,
-.mini-card,
-.experience-card,
-.award-mini,
-.card,
-.achievement-track .achievement-card {
+/*
+ * Unified card hover animation across pages. `will-change` is deliberately scoped to
+ * hover: as a standing declaration it promoted every card on the page to its own
+ * compositor layer, and paying for all of those layers at once is what made scrolling
+ * a long list of cards stutter. Announcing it on hover still beats the transition.
+ */
+.fact-card:hover,
+.mini-card:hover,
+.experience-card:hover,
+.award-mini:hover,
+.card:hover,
+.achievement-track .achievement-card:hover {
   will-change: transform, box-shadow, filter;
 }
 
@@ -2735,7 +2770,6 @@ main:has(.detail-page) {
 .long-animate .long-word {
   display: inline-block;
   opacity: 0;
-  will-change: transform, opacity, filter;
 }
 
 .long-animate.play .long-word {
@@ -3762,7 +3796,7 @@ footer p { margin: 0 0 0.24rem; }
  * inheriting a 560ms curve and appearing to queue behind the previous card.
  */
 .reveal:not(.reveal-done) {
-  transition: opacity 0.56s cubic-bezier(0.22, 1, 0.36, 1), transform 0.56s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.42s cubic-bezier(0.22, 1, 0.36, 1), transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
   transition-delay: var(--reveal-delay, 0ms);
 }
 
@@ -3816,8 +3850,9 @@ footer p { margin: 0 0 0.24rem; }
   --reveal-s: 0.94;
 }
 
+/* Same 0.42s as every other entrance, so `reveal-done` never truncates it mid-flight. */
 .achievement-card.reveal:not(.reveal-done) {
-  transition: opacity 0.72s cubic-bezier(0.16, 1, 0.3, 1), transform 0.72s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.42s cubic-bezier(0.16, 1, 0.3, 1), transform 0.42s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Explicit staggered fade-in for achievements cards */
@@ -4065,6 +4100,29 @@ textarea:focus {
   }
 }
 
+/*
+ * The narrowest phones cannot show the wordmark and a four-icon row at once, so while the row
+ * holds the bar the wordmark folds away and the logo mark carries the link home on its own.
+ * Wider phones have the room for both and keep it.
+ */
+@media (max-width: 480px) {
+  nav .logo span {
+    max-width: 12rem;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: max-width 300ms var(--hover-ease), opacity 200ms var(--hover-ease);
+  }
+
+  nav:has(.nav-dock-slot .dock-panel:not(.dock-leaving)) .logo {
+    gap: 0;
+  }
+
+  nav:has(.nav-dock-slot .dock-panel:not(.dock-leaving)) .logo span {
+    max-width: 0;
+    opacity: 0;
+  }
+}
+
 @media (max-width: 640px) {
   .plant-decor {
     display: none;
@@ -4072,8 +4130,20 @@ textarea:focus {
 
   .nav-toggle { display: inline-flex; }
 
-  /* Nothing to swap at this size: the menu is a dropdown panel and the dock never parks,
-     so the wrapper should not hold a slot in the bar. */
+  /*
+   * The parked row leads to all four pages on its own, so while it holds the bar the button
+   * that opens the dropdown would just be a second way to reach the same places. It steps
+   * aside and hands its spot to the icons, which is the same trade the inline links make on
+   * wider screens.
+   */
+  nav:has(.nav-dock-slot .dock-panel:not(.dock-leaving)) .nav-toggle {
+    display: none;
+  }
+
+  /*
+   * The menu is a dropdown panel here rather than something the row swaps with, so the
+   * wrapper collapses and lets the slot sit directly in the bar's own flex row.
+   */
   .nav-swap {
     display: contents;
   }

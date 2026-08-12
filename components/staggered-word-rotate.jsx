@@ -1,23 +1,22 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
+// No blur: an incoming and an outgoing word animate at the same time, so a blur here means
+// forty separately blurred characters re-rasterising every frame, twice every few seconds.
 const letterVariants = {
   initial: {
     y: -8,
     opacity: 0,
-    filter: "blur(2px)",
   },
   animate: {
     y: 0,
     opacity: 1,
-    filter: "blur(0px)",
   },
   exit: {
     y: 8,
     opacity: 0,
-    filter: "blur(2px)",
   },
 };
 
@@ -44,9 +43,46 @@ export default function StaggeredWordRotate({
   className = "",
 }) {
   const [index, setIndex] = useState(0);
+  const [isVisible, setIsVisible] = useState(true);
+  const [isScrolling, setIsScrolling] = useState(false);
+  const wrapperRef = useRef(null);
+
+  // This sits in the hero, so it is off screen for most of the page. Left running it kept
+  // mutating inline styles on every character while the visitor scrolled somewhere else,
+  // and that dirty style state made every scroll frame more expensive than it had to be.
+  useEffect(() => {
+    const wrapper = wrapperRef.current;
+    if (!wrapper || typeof IntersectionObserver === "undefined") return undefined;
+
+    const observer = new IntersectionObserver((entries) => {
+      setIsVisible(entries[entries.length - 1].isIntersecting);
+    });
+
+    observer.observe(wrapper);
+    return () => observer.disconnect();
+  }, []);
+
+  // A swap re-renders every character and animates two words at once. Starting one in the
+  // middle of a scroll costs a frame exactly when the visitor would notice, so swaps wait
+  // for the page to settle. Nobody is reading the tagline while the page is moving anyway.
+  useEffect(() => {
+    let idleTimer = 0;
+
+    function handleScroll() {
+      setIsScrolling(true);
+      window.clearTimeout(idleTimer);
+      idleTimer = window.setTimeout(() => setIsScrolling(false), 180);
+    }
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.clearTimeout(idleTimer);
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   useEffect(() => {
-    if (words.length < 2) return undefined;
+    if (words.length < 2 || !isVisible || isScrolling) return undefined;
 
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (prefersReducedMotion) return undefined;
@@ -56,7 +92,7 @@ export default function StaggeredWordRotate({
     }, interval);
 
     return () => window.clearInterval(timer);
-  }, [words, interval]);
+  }, [words, interval, isVisible, isScrolling]);
 
   if (!words.length) return null;
 
@@ -64,7 +100,7 @@ export default function StaggeredWordRotate({
   const chars = splitToChars(current);
 
   return (
-    <span className={`staggered-word-rotate ${className}`.trim()} aria-live="polite">
+    <span ref={wrapperRef} className={`staggered-word-rotate ${className}`.trim()} aria-live="polite">
       <span className="staggered-word-rotate-sizer" aria-hidden="true">
         {words.map((word) => (
           <span key={word} className="staggered-word-rotate-sizer-item">

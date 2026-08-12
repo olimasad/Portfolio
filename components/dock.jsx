@@ -142,7 +142,7 @@ export default function Dock({
         onMouseMove={({ clientX }) => mouseX.set(clientX)}
         onMouseLeave={() => mouseX.set(Infinity)}
         className={`dock-panel ${className}`.trim()}
-        style={{ "--dock-panel-height": `${panelHeight}px` }}
+        style={{ "--dock-panel-height": `${panelHeight}px`, "--dock-item-size": `${baseItemSize}px` }}
         role="toolbar"
         aria-label="Section navigation"
       >

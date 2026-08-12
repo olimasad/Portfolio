@@ -52,6 +52,18 @@ window.scrollTo(0, 0);
     if (!menu.classList.contains("open")) return;
     setMenuState(false);
   });
+
+  // Scrolling with the panel open dismisses it. Past the top of the page the navbar hands its
+  // room to the parked icon row, and this button goes with it, so leaving an open panel behind
+  // would strand it there with nothing left to close it.
+  window.addEventListener(
+    "scroll",
+    function () {
+      if (!menu.classList.contains("open")) return;
+      setMenuState(false);
+    },
+    { passive: true }
+  );
 })();
 
 // Copy email button (only on contact page)
@@ -76,20 +88,50 @@ window.scrollTo(0, 0);
 (function () {
   var revealObserver = null;
   var prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var REVEAL_TRANSITION_MS = 560;
+  /* Keep in step with the .reveal transition in globals.css. */
+  var REVEAL_TRANSITION_MS = 420;
   /* A hair past the end of the transition, so `reveal-done` never lands mid-frame. */
   var REVEAL_DONE_BUFFER_MS = 20;
+  /*
+   * Past roughly this speed (px per ms) an entrance is pointless: the element is already
+   * leaving by the time it would finish, so the visitor only ever sees half-faded,
+   * offset content. Above the threshold elements are simply placed.
+   */
+  var FAST_SCROLL_PX_PER_MS = 2.4;
   var revealSelectors =
     ".section, .card:not(.project-item):not(.achievement-card), .contact-block, .form-section, .fact-card, .mini-card, .experience-card, .achievement-banner, .award-mini, .timeline-card, .chip, .skill-cloud span, .skill-cloud-tag, .expandable-block:not(.win-card-link), .bento, .bento-row, .win-card, .year-bar, .stats-band, .dock-anchor, .home-head, .track-heading, .skill-detail, .msg-success, .msg-error, .footer-links, footer p";
-  /* Cards inside a shared parent cascade instead of all landing at once. */
-  var STAGGER_STEP_MS = 65;
-  var STAGGER_MAX_MS = 420;
+  /*
+   * Cards inside a shared parent cascade instead of all landing at once. The cap matters
+   * more than the step: a long row used to keep filling in for most of a second after it
+   * was already on screen, which reads as the page lagging behind the scroll.
+   */
+  var STAGGER_STEP_MS = 45;
+  var STAGGER_MAX_MS = 200;
 
   function parseDelayMs(value) {
     if (!value) return 0;
     var numeric = parseFloat(String(value).replace("ms", "").trim());
     return Number.isFinite(numeric) ? numeric : 0;
   }
+
+  // Sampled from the scroll event rather than per frame: no layout is read, and the
+  // observer only needs a rough sense of how fast the page is moving.
+  var lastScrollY = window.scrollY;
+  var lastScrollAt = 0;
+  var scrollSpeed = 0;
+
+  window.addEventListener(
+    "scroll",
+    function () {
+      var now = performance.now();
+      var elapsed = now - lastScrollAt;
+      if (elapsed < 16) return;
+      scrollSpeed = Math.abs(window.scrollY - lastScrollY) / elapsed;
+      lastScrollY = window.scrollY;
+      lastScrollAt = now;
+    },
+    { passive: true }
+  );
 
   function setupPageReveals() {
     var revealTargets = document.querySelectorAll(revealSelectors);
@@ -125,7 +167,7 @@ window.scrollTo(0, 0);
             entries.forEach(function (entry) {
               if (entry.isIntersecting) {
                 entry.target.classList.add("in-view");
-                if (prefersReducedMotion) {
+                if (prefersReducedMotion || scrollSpeed > FAST_SCROLL_PX_PER_MS) {
                   entry.target.classList.add("reveal-done");
                 } else {
                   // Counted from the element's own stagger delay, so the handover waits for
@@ -140,10 +182,10 @@ window.scrollTo(0, 0);
               }
             });
           },
-          // Pre-trigger just below the fold so content has settled by the time it is read.
-          // A negative bottom margin would leave anything pinned to the bottom of the page
-          // (the footer at max scroll) permanently unrevealed.
-          { threshold: 0.02, rootMargin: "0px 0px 10% 0px" }
+          // Pre-trigger below the fold so an entrance is already underway by the time the
+          // element is actually looked at. A negative bottom margin would leave anything
+          // pinned to the bottom of the page (the footer at max scroll) permanently unrevealed.
+          { threshold: 0.01, rootMargin: "0px 0px 20% 0px" }
         );
 
         revealTargets.forEach(function (el) {
@@ -260,8 +302,17 @@ window.scrollTo(0, 0);
       blurX += (mouseX - blurX) * 0.2;
       blurY += (mouseY - blurY) * 0.2;
 
-      blur.style.left = blurX + "px";
-      blur.style.top = blurY + "px";
+      // Transform stays on the compositor; left/top would relayout and repaint the
+      // blur every frame, which competes with scrolling for the same frame budget.
+      blur.style.transform =
+        "translate3d(" + Math.round(blurX) + "px, " + Math.round(blurY) + "px, 0) translate(-50%, -50%)";
+
+      // Once the halo has caught up there is nothing left to animate, so the loop
+      // stops instead of idling behind every scroll frame until the next mousemove.
+      if (Math.abs(mouseX - blurX) < 0.5 && Math.abs(mouseY - blurY) < 0.5) {
+        rafId = null;
+        return;
+      }
       rafId = window.requestAnimationFrame(render);
     }
 
@@ -328,8 +379,20 @@ window.scrollTo(0, 0);
       return el.classList.contains("reveal") && !el.classList.contains("reveal-done");
     }
 
-    el.addEventListener("mousemove", function (event) {
+    // Pointers fire far more often than the screen refreshes. Measuring and writing on
+    // every event forced a layout per event, which is what made scrolling with the
+    // cursor over a card stutter; now at most one read/write pair lands per frame.
+    var pendingEvent = null;
+    var moveFrame = 0;
+
+    function applyPointer() {
+      moveFrame = 0;
+      var event = pendingEvent;
+      pendingEvent = null;
+      if (!event) return;
+
       var rect = el.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
       var x = ((event.clientX - rect.left) / rect.width) * 100;
       var y = ((event.clientY - rect.top) / rect.height) * 100;
       var dx = (x - 50) / 50;
@@ -341,9 +404,24 @@ window.scrollTo(0, 0);
       if (isRevealing()) return;
       el.style.setProperty("--ry", (dx * 3).toFixed(2) + "deg");
       el.style.setProperty("--rx", (-dy * 3).toFixed(2) + "deg");
-    });
+    }
+
+    el.addEventListener(
+      "mousemove",
+      function (event) {
+        pendingEvent = { clientX: event.clientX, clientY: event.clientY };
+        if (moveFrame) return;
+        moveFrame = window.requestAnimationFrame(applyPointer);
+      },
+      { passive: true }
+    );
 
     el.addEventListener("mouseleave", function () {
+      pendingEvent = null;
+      if (moveFrame) {
+        window.cancelAnimationFrame(moveFrame);
+        moveFrame = 0;
+      }
       el.style.setProperty("--mx", "-20%");
       el.style.setProperty("--my", "-20%");
       el.style.setProperty("--mouse-x", "50%");
@@ -373,27 +451,44 @@ window.scrollTo(0, 0);
   window.addEventListener("pageshow", setupInteractiveCards);
 })();
 
-// Subtle scroll parallax for hero block
+// The hero used to drift on scroll. It moved at most 10px, but every scroll frame
+// retargeted a 0.35s transition on the largest text on the page, so the heading chased
+// the scroll instead of tracking it. Letting the hero scroll normally is what makes the
+// top of the page feel attached to the wheel.
+
+// The plant decorations sway forever inside a fixed, full-screen layer, so their animation
+// lands on the same main thread the scroll needs. They hand it back while the page moves and
+// pick the sway up again once it settles. The class goes on the small decor subtree rather
+// than the document root, so resuming does not restyle the whole page.
 (function () {
-  var prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (prefersReducedMotion) return;
+  var idleTimer = null;
+  var isScrolling = false;
+  var decor = null;
 
-  var hero = document.querySelector(".hero-flat");
-  if (!hero) return;
-
-  var ticking = false;
-  function onScroll() {
-    if (ticking) return;
-    ticking = true;
-    window.requestAnimationFrame(function () {
-      var y = Math.min(window.scrollY, 500);
-      hero.style.setProperty("--hero-parallax", y * -0.02 + "px");
-      ticking = false;
-    });
+  function decorEl() {
+    if (!decor || !decor.isConnected) decor = document.querySelector(".plant-decor");
+    return decor;
   }
 
-  window.addEventListener("scroll", onScroll, { passive: true });
-  onScroll();
+  window.addEventListener(
+    "scroll",
+    function () {
+      var el = decorEl();
+      if (!el) return;
+
+      if (!isScrolling) {
+        isScrolling = true;
+        el.classList.add("decor-paused");
+      }
+
+      window.clearTimeout(idleTimer);
+      idleTimer = window.setTimeout(function () {
+        isScrolling = false;
+        el.classList.remove("decor-paused");
+      }, 200);
+    },
+    { passive: true }
+  );
 })();
 
 // Animate long paragraphs word-by-word on scroll (About Me)

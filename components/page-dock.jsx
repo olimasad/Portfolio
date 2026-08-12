@@ -20,9 +20,19 @@ const PINNED = {
   dockHeight: 46,
   distance: 130,
 };
+/* A phone bar has to fit the row beside the wordmark and the theme toggle, so it runs smaller. */
+const PINNED_TIGHT = {
+  baseItemSize: 30,
+  magnification: 38,
+  panelHeight: 38,
+  dockHeight: 38,
+  distance: 110,
+};
 
-/* Below this the navbar has no room to host the row alongside the logo. */
-const PIN_QUERY = "(min-width: 1024px)";
+/* Where the row stands in for the menu button rather than for a set of inline links. */
+const TIGHT_QUERY = "(max-width: 640px)";
+/* Narrower than this and even the shrunken row cannot share the bar with the logo. */
+const PIN_QUERY = "(min-width: 360px)";
 
 /* Hysteresis: how far back up you scroll before the parked row is released again. */
 const RELEASE_SLACK = 90;
@@ -46,6 +56,7 @@ export default function PageDock({ sections = [], currentHref = "/" }) {
   const router = useRouter();
   const anchorRef = useRef(null);
   const [compact, setCompact] = useState(false);
+  const [tight, setTight] = useState(false);
   const [canPin, setCanPin] = useState(false);
   const [pinned, setPinned] = useState(false);
   // Trails `pinned` on the way out so the parked row survives long enough to play its exit
@@ -62,20 +73,20 @@ export default function PageDock({ sections = [], currentHref = "/" }) {
   }, []);
 
   useEffect(() => {
-    const compactQuery = window.matchMedia("(max-width: 860px)");
-    const pinQuery = window.matchMedia(PIN_QUERY);
+    const queries = [
+      window.matchMedia("(max-width: 860px)"),
+      window.matchMedia(TIGHT_QUERY),
+      window.matchMedia(PIN_QUERY),
+    ];
     const sync = () => {
-      setCompact(compactQuery.matches);
-      setCanPin(pinQuery.matches);
+      setCompact(queries[0].matches);
+      setTight(queries[1].matches);
+      setCanPin(queries[2].matches);
     };
 
     sync();
-    compactQuery.addEventListener("change", sync);
-    pinQuery.addEventListener("change", sync);
-    return () => {
-      compactQuery.removeEventListener("change", sync);
-      pinQuery.removeEventListener("change", sync);
-    };
+    queries.forEach((query) => query.addEventListener("change", sync));
+    return () => queries.forEach((query) => query.removeEventListener("change", sync));
   }, []);
 
   // Remember the inline footprint so the page does not jump when the dock leaves it.
@@ -104,6 +115,9 @@ export default function PageDock({ sections = [], currentHref = "/" }) {
       parseInt(getComputedStyle(document.documentElement).getPropertyValue("--nav-height"), 10) || 62;
 
     let frame = 0;
+    // Measuring the anchor on every scroll frame forced a layout mid-scroll. The anchor
+    // holds its footprint while pinned, so its offset only moves when the page reflows.
+    let threshold = 0;
 
     function apply(next) {
       if (next === pinnedRef.current) return;
@@ -111,11 +125,12 @@ export default function PageDock({ sections = [], currentHref = "/" }) {
       setPinned(next);
     }
 
+    function remeasure() {
+      threshold = anchor.getBoundingClientRect().bottom + window.scrollY - navHeight;
+    }
+
     function evaluate() {
       frame = 0;
-      // The anchor holds its footprint while pinned, so this offset stays stable.
-      const anchorBottom = anchor.getBoundingClientRect().bottom + window.scrollY;
-      const threshold = anchorBottom - navHeight;
 
       // A non-positive threshold means the strip was measured before layout settled.
       // Treating that as "scrolled past" is what parks the dock in the navbar at the top
@@ -135,14 +150,29 @@ export default function PageDock({ sections = [], currentHref = "/" }) {
       frame = window.requestAnimationFrame(evaluate);
     }
 
+    function scheduleRemeasure() {
+      remeasure();
+      schedule();
+    }
+
+    remeasure();
     evaluate();
     window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
+    window.addEventListener("resize", scheduleRemeasure);
+
+    // Fonts, images and route content settling all shift the anchor, and each of those
+    // changes the page height, so this refreshes the cached offset without touching scroll.
+    let bodyObserver;
+    if (typeof ResizeObserver !== "undefined") {
+      bodyObserver = new ResizeObserver(scheduleRemeasure);
+      bodyObserver.observe(document.body);
+    }
 
     return () => {
       if (frame) window.cancelAnimationFrame(frame);
+      if (bodyObserver) bodyObserver.disconnect();
       window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
+      window.removeEventListener("resize", scheduleRemeasure);
     };
   }, [canPin]);
 
@@ -207,7 +237,7 @@ export default function PageDock({ sections = [], currentHref = "/" }) {
             <Dock
               items={parkedItems}
               className={`dock-pinned${pinned ? "" : " dock-leaving"}`}
-              {...PINNED}
+              {...(tight ? PINNED_TIGHT : PINNED)}
             />,
             slot,
           )
