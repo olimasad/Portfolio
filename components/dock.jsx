@@ -132,13 +132,17 @@ export default function Dock({
     [dockHeight, panelHeight, peakSize],
   );
 
+  /*
+   * Heights travel as custom properties rather than inline `height`, so the stylesheet can
+   * hand them back (a phone wraps the row onto two lines and needs an intrinsic height).
+   */
   return (
-    <div className="dock-outer" style={{ height: outerHeight }}>
+    <div className="dock-outer" style={{ "--dock-outer-height": `${outerHeight}px` }}>
       <div
         onMouseMove={({ clientX }) => mouseX.set(clientX)}
         onMouseLeave={() => mouseX.set(Infinity)}
         className={`dock-panel ${className}`.trim()}
-        style={{ height: panelHeight }}
+        style={{ "--dock-panel-height": `${panelHeight}px` }}
         role="toolbar"
         aria-label="Section navigation"
       >

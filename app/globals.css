@@ -807,6 +807,12 @@ main {
 .page-body {
   --home-gap: 3.1rem;
   display: grid;
+  /*
+   * Explicit, or the single implicit track takes its minimum from the widest child's
+   * min-content. The dock never shrinks below its row of icons, so on a phone that one
+   * child would set the width of every tile on the page and push the lot off-screen.
+   */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--home-gap);
 }
 
@@ -891,6 +897,7 @@ main {
   align-items: flex-end;
   justify-content: center;
   width: 100%;
+  height: var(--dock-outer-height);
   /*
    * Deliberately not a scroll container here. `overflow-x: auto` clips its contents, so
    * an item travelling back in from the navbar would be cut off until it landed inside
@@ -910,6 +917,8 @@ main {
   align-items: flex-end;
   gap: clamp(0.4rem, 1vw, 0.85rem);
   width: fit-content;
+  max-width: 100%;
+  height: var(--dock-panel-height);
   margin: 0 auto;
   padding: 0 0.7rem 0.7rem;
   border: 1px solid var(--line);
@@ -995,6 +1004,27 @@ main {
   .dock-icon svg {
     width: 20px;
     height: 20px;
+  }
+}
+
+/*
+ * A phone cannot show ten tiles on one line, and a silent side-scroller just hides half
+ * the nav off the edge. The row wraps instead, which needs the panel back on an intrinsic
+ * height: the reserved headroom above it only makes sense for a single line.
+ */
+@media (max-width: 640px) {
+  .dock-outer {
+    height: auto;
+    justify-content: center;
+    overflow: visible;
+  }
+
+  .dock-panel {
+    height: auto;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 0.7rem;
+    row-gap: 0.5rem;
   }
 }
 
@@ -1877,6 +1907,9 @@ a.home-card:hover {
  */
 .tool-cloud {
   display: grid;
+  /* Same reason as .home-page: the canvas has a fixed size, so an auto track would
+     grow to it and burst the tile before the cloud gets a chance to measure smaller. */
+  grid-template-columns: minmax(0, 1fr);
   justify-items: center;
   gap: 0.4rem;
 }
