@@ -283,9 +283,6 @@ window.scrollTo(0, 0);
 
     var mouseX = window.innerWidth / 2;
     var mouseY = window.innerHeight / 2;
-    var blurX = mouseX;
-    var blurY = mouseY;
-    var rafId = null;
     var idleTimer = null;
 
     function setActiveCursorState() {
@@ -298,56 +295,30 @@ window.scrollTo(0, 0);
       }, 1600);
     }
 
-    function render() {
-      blurX += (mouseX - blurX) * 0.2;
-      blurY += (mouseY - blurY) * 0.2;
-
-      // Transform stays on the compositor; left/top would relayout and repaint the
-      // blur every frame, which competes with scrolling for the same frame budget.
+    // Written straight from the event rather than on the next animation frame, so the
+    // halo lands on the same pixel as the pointer instead of a frame behind it.
+    // Transform stays on the compositor; left/top would relayout every move.
+    function draw() {
       blur.style.transform =
-        "translate3d(" + Math.round(blurX) + "px, " + Math.round(blurY) + "px, 0) translate(-50%, -50%)";
-
-      // Once the halo has caught up there is nothing left to animate, so the loop
-      // stops instead of idling behind every scroll frame until the next mousemove.
-      if (Math.abs(mouseX - blurX) < 0.5 && Math.abs(mouseY - blurY) < 0.5) {
-        rafId = null;
-        return;
-      }
-      rafId = window.requestAnimationFrame(render);
-    }
-
-    function startRenderLoop() {
-      if (rafId) return;
-      rafId = window.requestAnimationFrame(render);
-    }
-
-    function stopRenderLoop() {
-      if (!rafId) return;
-      window.cancelAnimationFrame(rafId);
-      rafId = null;
+        "translate3d(" + mouseX + "px, " + mouseY + "px, 0) translate(-50%, -50%)";
     }
 
     window.addEventListener("mousemove", function (event) {
       mouseX = event.clientX;
       mouseY = event.clientY;
       setActiveCursorState();
-      startRenderLoop();
+      draw();
     }, { passive: true });
 
     window.addEventListener("mouseleave", function () {
       body.classList.remove("cursor-active");
-      stopRenderLoop();
     });
 
     window.addEventListener("blur", function () {
       body.classList.remove("cursor-active");
     });
 
-    window.addEventListener("pageshow", function () {
-      startRenderLoop();
-    });
-
-    startRenderLoop();
+    draw();
   }
 
   if (document.readyState === "loading" && !document.body) {

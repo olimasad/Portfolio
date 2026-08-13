@@ -13,7 +13,7 @@ html[data-theme="light"] {
   --blue-tint-strong: rgba(139, 115, 85, 0.1);
   --blue-border: rgba(92, 74, 58, 0.16);
   --text: #3d3429;
-  --text-muted: #7a6f61;
+  --text-muted: #5c5348;
   --line: rgba(92, 74, 58, 0.12);
   --line-strong: rgba(92, 74, 58, 0.22);
   --accent: #8b7355;
@@ -74,7 +74,7 @@ html[data-theme="dark"] {
   --blue-tint-strong: rgba(196, 168, 130, 0.12);
   --blue-border: rgba(196, 168, 130, 0.22);
   --text: #f0ebe3;
-  --text-muted: #a89f91;
+  --text-muted: #c4bbb0;
   --line: rgba(240, 235, 227, 0.1);
   --line-strong: rgba(240, 235, 227, 0.18);
   --accent: #c4a882;
@@ -388,10 +388,14 @@ main h3,
   z-index: 260;
   opacity: 0;
   transform: translate(-50%, -50%);
-  background: rgba(139, 115, 85, 0.12);
+  background: rgba(139, 115, 85, 0.32);
   filter: blur(13px);
   transition: opacity 0.2s ease;
   will-change: transform, opacity;
+}
+
+html[data-theme="dark"] .cursor-blur {
+  background: rgba(196, 168, 130, 0.38);
 }
 
 html.modern-cursor-enabled,
@@ -414,7 +418,7 @@ html.modern-cursor-enabled .nav-toggle {
 }
 
 body.cursor-active .cursor-blur {
-  opacity: 0.58;
+  opacity: 0.9;
 }
 
 .nav-wrap {
@@ -1230,15 +1234,32 @@ main {
   flex-direction: column;
   gap: 1.05rem;
   padding: clamp(1.25rem, 2.1vw, 1.75rem);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  box-shadow: var(--shadow-soft);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 /* Fallback for hash links; the dock itself scrolls with its own measured offset. */
 .bento[id] {
   scroll-margin-top: calc(var(--nav-height) + 1.6rem);
+}
+
+/*
+ * Hairline rules between tiles, borrowing the stats band treatment. The grid keeps its
+ * gap, so these read as separate segments rather than one continuous frame.
+ *
+ * Full-width tiles always own a row, which makes them the anchor for working out where
+ * rows begin: counting only the narrower tiles, every second one is a right-hand tile
+ * and so is the one that needs a rule on its left.
+ */
+:is(.home-bento, .bento-grid) > .bento:nth-child(even of :not(.bento-12)) {
+  border-left: 1px solid var(--line);
+}
+
+/* Each grid opens with a paired row, so rules start from the third tile onward. */
+:is(.home-bento, .bento-grid) > .bento:nth-child(n + 3) {
+  border-top: 1px solid var(--line);
 }
 
 .bento-4 { grid-column: span 4; }
@@ -1271,7 +1292,7 @@ main {
   font-size: clamp(1.1rem, 1.7vw, 1.45rem);
   line-height: 1.55;
   letter-spacing: -0.01em;
-  color: var(--text-muted);
+  color: var(--text);
   max-width: 40ch;
 }
 
@@ -1348,7 +1369,7 @@ a.bento-row:hover .bento-row-blurb {
 
 .bento-row-meta {
   font-size: 0.88rem;
-  color: var(--text-muted);
+  color: color-mix(in srgb, var(--text) 72%, var(--text-muted));
 }
 
 .bento-row-dates {
@@ -1361,7 +1382,7 @@ a.bento-row:hover .bento-row-blurb {
   margin: 0.2rem 0 0;
   font-size: 0.88rem;
   line-height: 1.55;
-  color: var(--text-muted);
+  color: color-mix(in srgb, var(--text) 68%, var(--text-muted));
 }
 
 /* Label left, detail right on a single baseline. */
@@ -1416,6 +1437,16 @@ a.bento-row:hover .bento-row-blurb {
   .bento-8,
   .bento-12 {
     grid-column: span 1;
+  }
+
+  /* One tile per row, so only the horizontal rules survive. */
+  :is(.home-bento, .bento-grid) > .bento {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  :is(.home-bento, .bento-grid) > .bento:first-child {
+    border-top: 0;
   }
 }
 
