@@ -11,7 +11,25 @@ const SCROLL_OFFSET = 88;
 
 /* A long row does not fit a phone at desktop sizing, so the dock shrinks below this width. */
 const REGULAR = { baseItemSize: 58, magnification: 88, panelHeight: 74, distance: 200 };
-const COMPACT = { baseItemSize: 44, magnification: 62, panelHeight: 58, distance: 130 };
+
+/*
+ * Compact tiles are sized to whatever the strip is given rather than to a fixed number, so a
+ * row that is a few pixels too wide shrinks to fit instead of dropping its last tile onto a
+ * second line. The ceiling is the size the strip used to run at, and the floor is the point
+ * where a tile stops being comfortable to tap: rows too long to reach it (the homepage carries
+ * ten) stay at full size and wrap, which reads better than a line of unhittable specks.
+ */
+const COMPACT_MAX = 44;
+const COMPACT_MIN = 34;
+
+function compactSizing(baseItemSize) {
+  return {
+    baseItemSize,
+    magnification: Math.round(baseItemSize * 1.4),
+    panelHeight: baseItemSize + 14,
+    distance: 130,
+  };
+}
 /* Parked in the navbar: dockHeight caps the reserved headroom so it fits the 62px bar. */
 const PINNED = {
   baseItemSize: 34,
@@ -67,6 +85,8 @@ export default function PageDock({ sections = [], currentHref = "/" }) {
   const pinnedRef = useRef(false);
   const [reservedHeight, setReservedHeight] = useState(null);
   const [slot, setSlot] = useState(null);
+  // Null until measured, and again whenever the row cannot be squeezed onto one line.
+  const [fittedSize, setFittedSize] = useState(null);
 
   useEffect(() => {
     setSlot(document.getElementById("nav-dock-slot"));
@@ -93,7 +113,7 @@ export default function PageDock({ sections = [], currentHref = "/" }) {
   useEffect(() => {
     if (pinned || !anchorRef.current) return;
     setReservedHeight(anchorRef.current.offsetHeight);
-  }, [pinned, compact]);
+  }, [pinned, compact, fittedSize]);
 
   /*
    * Hand the dock to the navbar only after its own strip has scrolled up behind the bar.
@@ -221,6 +241,42 @@ export default function PageDock({ sections = [], currentHref = "/" }) {
     })),
   ];
 
+  /*
+   * Work out the largest tile that still leaves the whole row on one line. The panel's own
+   * padding, borders and gap are read back from the stylesheet rather than repeated here, so
+   * the two cannot drift apart. The anchor is measured instead of the panel because the panel
+   * is only as wide as its contents, which is the very thing being sized.
+   */
+  useEffect(() => {
+    const anchor = anchorRef.current;
+    if (!compact || !anchor || typeof ResizeObserver === "undefined") {
+      setFittedSize(null);
+      return undefined;
+    }
+
+    function measure() {
+      const panel = anchor.querySelector(".dock-panel");
+      if (!panel) return;
+
+      const styles = window.getComputedStyle(panel);
+      const frame =
+        parseFloat(styles.paddingLeft) +
+        parseFloat(styles.paddingRight) +
+        parseFloat(styles.borderLeftWidth) +
+        parseFloat(styles.borderRightWidth);
+      const gap = parseFloat(styles.columnGap) || 0;
+      const room = anchor.clientWidth - frame - gap * (inlineItems.length - 1);
+      const perItem = Math.floor(room / inlineItems.length);
+
+      setFittedSize(perItem >= COMPACT_MIN ? Math.min(perItem, COMPACT_MAX) : null);
+    }
+
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(anchor);
+    return () => observer.disconnect();
+  }, [compact, inlineItems.length, pinned]);
+
   return (
     <>
       <div
@@ -229,7 +285,10 @@ export default function PageDock({ sections = [], currentHref = "/" }) {
         style={pinned && reservedHeight ? { height: reservedHeight } : undefined}
       >
         {pinned ? null : (
-          <Dock items={inlineItems} {...(compact ? COMPACT : REGULAR)} />
+          <Dock
+            items={inlineItems}
+            {...(compact ? compactSizing(fittedSize ?? COMPACT_MAX) : REGULAR)}
+          />
         )}
       </div>
       {parked && slot

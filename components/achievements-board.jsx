@@ -96,7 +96,7 @@ export default function AchievementsBoard() {
 
   const index = [
     { href: "#wins", label: "Wins", count: wins.length },
-    { href: "#experiences", label: "Competitions & Programs", count: experiences.length },
+    { href: "#experiences", label: "Competitions & Extracurriculars", count: experiences.length },
     { href: "#certificates", label: "Certificates", count: certificates.length },
   ];
 
@@ -151,7 +151,7 @@ export default function AchievementsBoard() {
 
       <section id="experiences" className="bento bento-12" data-reveal="left">
         <div className="bento-head">
-          <h2 className="bento-title">Competitions & Programs</h2>
+          <h2 className="bento-title">Competitions & Extracurriculars</h2>
           <span className="bento-count">{experiences.length}</span>
         </div>
         <p className="bento-note">

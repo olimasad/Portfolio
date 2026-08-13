@@ -7,7 +7,7 @@ export const metadata = {
 
 const dockSections = [
   { id: "wins", label: "Wins", icon: "competitions" },
-  { id: "experiences", label: "Competitions & Programs", icon: "list" },
+  { id: "experiences", label: "Competitions & Extracurriculars", icon: "list" },
   { id: "certificates", label: "Certificates", icon: "certificate" },
 ];
 

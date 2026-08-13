@@ -1048,6 +1048,15 @@ main {
     padding: 0.7rem;
     row-gap: 0.5rem;
   }
+
+  /*
+   * The pull-up above only pays for itself while the outer box reserves headroom over the
+   * panel. That headroom is gone here, so keeping it would drag the row up over the text
+   * the strip is supposed to sit below.
+   */
+  .dock-anchor {
+    margin-top: 0;
+  }
 }
 
 /*
