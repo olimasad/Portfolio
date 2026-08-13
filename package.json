@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/olimasad/portfolio#readme",
   "dependencies": {
+    "@vercel/speed-insights": "^2.0.0",
     "framer-motion": "^12.42.2",
     "next": "^16.2.1",
     "nodemailer": "^8.0.4",

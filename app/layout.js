@@ -1,5 +1,6 @@
 import Script from "next/script";
 import { Inter } from "next/font/google";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import SiteFrame from "../components/site-frame";
 
@@ -44,6 +45,7 @@ export default function RootLayout({ children }) {
       <body className={inter.className}>
         <SiteFrame>{children}</SiteFrame>
         <Script src="/script.js" strategy="afterInteractive" />
+        <SpeedInsights />
       </body>
     </html>
   );
