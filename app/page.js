@@ -4,7 +4,7 @@ import { ExpandableBlock } from "../components/home-detail-context";
 import IconCloudPanel from "../components/icon-cloud-panel";
 import StatsBand from "../components/stats-band";
 import StaggeredWordRotate from "../components/staggered-word-rotate";
-import { achievements, projects } from "../lib/data";
+import { achievements, cvHref, projects } from "../lib/data";
 import { skills } from "../lib/skills";
 
 const taglineWords = [
@@ -116,6 +116,9 @@ export default function HomePage() {
           <Link href="/contact" className="btn btn-secondary btn-pill">
             Get in Touch
           </Link>
+          <a href={cvHref} className="btn btn-secondary btn-pill" download>
+            Download CV
+          </a>
         </div>
         <div className="meta-pills intro-item" data-reveal="left">
           <span className="pill">AI & full-stack apps</span>

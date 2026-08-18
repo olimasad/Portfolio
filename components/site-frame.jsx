@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { cvHref } from "../lib/data";
 import PlantDecor from "./plant-decor";
 import ThemeToggle from "./theme-toggle";
 
@@ -169,6 +170,9 @@ export default function SiteFrame({ children }) {
       </main>
       <footer>
         <p>&copy; 2026 Oliver Massaad</p>
+        <a className="footer-cv-link" href={cvHref} download>
+          CV
+        </a>
         <div className="footer-links">
           <a className="footer-icon-link" href="https://github.com/olimasad" target="_blank" rel="noopener" aria-label="GitHub">
             <svg viewBox="0 0 24 24" aria-hidden="true">

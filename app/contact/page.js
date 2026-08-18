@@ -1,3 +1,5 @@
+import { cvHref } from "../../lib/data";
+
 export const metadata = {
   title: "Contact - Oliver Massaad",
 };
@@ -10,6 +12,7 @@ const errorMessages = {
 const channels = [
   { label: "Email", value: "olimasad@gmail.com", href: "mailto:olimasad@gmail.com" },
   { label: "Phone", value: "+1 418-262-8434", href: "tel:+14182628434" },
+  { label: "CV", value: "PDF", href: cvHref, download: true },
   { label: "GitHub", value: "olimasad", href: "https://github.com/olimasad", external: true },
   {
     label: "LinkedIn",
@@ -84,6 +87,9 @@ export default async function ContactPage({ searchParams }) {
               >
                 LinkedIn
               </a>
+              <a href={cvHref} className="btn btn-secondary btn-pill" download>
+                Download CV
+              </a>
             </div>
             <div className="bento-pills">
               <span className="pill">Montreal, Canada</span>
@@ -102,6 +108,7 @@ export default async function ContactPage({ searchParams }) {
                   href={channel.href}
                   data-reveal="right"
                   {...(channel.external ? { target: "_blank", rel: "noopener" } : {})}
+                  {...(channel.download ? { download: true } : {})}
                 >
                   <span className="bento-row-main">{channel.label}</span>
                   <span className="bento-row-meta">{channel.value}</span>

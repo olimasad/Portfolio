@@ -3358,6 +3358,23 @@ footer {
 
 footer p { margin: 0 0 0.24rem; }
 
+.footer-cv-link {
+  display: inline-block;
+  margin-bottom: 0.35rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footer-cv-link:hover,
+.footer-cv-link:focus-visible {
+  color: var(--accent);
+}
+
 .footer-links {
   display: flex;
   align-items: center;
