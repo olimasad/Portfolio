@@ -12,7 +12,7 @@ function getStoredTheme() {
   } catch {
     /* ignore */
   }
-  return "light";
+  return "dark";
 }
 
 function applyTheme(theme) {
@@ -37,7 +37,7 @@ function setThemeVars(nextTheme) {
 }
 
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState("light");
+  const [theme, setTheme] = useState("dark");
   const [animating, setAnimating] = useState(false);
   const transitionTimer = useRef(null);
 

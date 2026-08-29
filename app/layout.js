@@ -21,24 +21,24 @@ export const metadata = {
 };
 
 export const viewport = {
-  themeColor: "#f7f7f4",
+  themeColor: "#171512",
 };
 
 const themeInitScript = `
 (function () {
   try {
     var stored = localStorage.getItem("theme");
-    var theme = stored === "dark" ? "dark" : "light";
+    var theme = stored === "light" ? "light" : "dark";
     document.documentElement.setAttribute("data-theme", theme);
   } catch (e) {
-    document.documentElement.setAttribute("data-theme", "light");
+    document.documentElement.setAttribute("data-theme", "dark");
   }
 })();
 `;
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" data-theme="light" data-scroll-behavior="smooth" suppressHydrationWarning>
+    <html lang="en" data-theme="dark" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>

@@ -22,7 +22,7 @@ export default function IconCloudPanel({
   emptyTitle = "Pick a skill",
   emptyHint = "Drag the cloud to spin it, then click any icon to see what it is and which projects it shows up in.",
 }) {
-  const [theme, setTheme] = useState("light");
+  const [theme, setTheme] = useState("dark");
   const [selectedIndex, setSelectedIndex] = useState(-1);
 
   useEffect(() => {

@@ -30,8 +30,9 @@ export default function ProjectsBoard() {
       <section className="bento bento-7" data-reveal="left">
         <h2 className="bento-title">Selected Work</h2>
         <p className="bento-lead">
-          Ten builds across three very different disciplines, from AI-backed apps to VR walkthroughs
-          delivered for a general contractor. Every one has a write-up with the process behind it.
+          {numbered.length} builds across three very different disciplines, from AI-backed apps to VR
+          walkthroughs delivered for a general contractor. Every one has a write-up with the process
+          behind it.
         </p>
         <div className="bento-rows bento-index">
           {grouped.map((group) => (
