@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "My Portfolio",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --port 3000",
     "build": "next build",
     "optimize:gallery": "node scripts/optimize-gallery.mjs --delete-originals",
-    "start": "next start"
+    "start": "next start --port 3000"
   },
   "repository": {
     "type": "git",
