@@ -3877,6 +3877,19 @@ footer p { margin: 0 0 0.24rem; }
   --reveal-y: 0px;
 }
 
+/* Two-column project grids: stronger horizontal travel so left/right reads clearly. */
+.bento-split-rows .bento-rows-2 > .bento-row-project.reveal[data-reveal="left"] {
+  --reveal-x: clamp(-140px, -14vw, -72px);
+  --reveal-y: 8px;
+  --reveal-s: 0.94;
+}
+
+.bento-split-rows .bento-rows-2 > .bento-row-project.reveal[data-reveal="right"] {
+  --reveal-x: clamp(72px, 14vw, 140px);
+  --reveal-y: 8px;
+  --reveal-s: 0.94;
+}
+
 .reveal[data-reveal="top"] {
   --reveal-x: 0px;
   --reveal-y: -22px;
