@@ -148,14 +148,9 @@ window.scrollTo(0, 0);
 
       // Delay is per sibling group, so each row/grid cascades on its own.
       var parent = el.parentElement;
-      var customDelay = el.getAttribute("data-reveal-delay");
-      if (customDelay != null) {
-        el.style.setProperty("--reveal-delay", customDelay);
-      } else {
-        var position = groupCounts.get(parent) || 0;
-        groupCounts.set(parent, position + 1);
-        el.style.setProperty("--reveal-delay", Math.min(position * STAGGER_STEP_MS, STAGGER_MAX_MS) + "ms");
-      }
+      var position = groupCounts.get(parent) || 0;
+      groupCounts.set(parent, position + 1);
+      el.style.setProperty("--reveal-delay", Math.min(position * STAGGER_STEP_MS, STAGGER_MAX_MS) + "ms");
     });
 
     // Two-frame setup:

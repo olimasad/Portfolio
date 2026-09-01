@@ -9,10 +9,27 @@ import IconCloudPanel from "./icon-cloud-panel";
  * are picked so that tiles sharing a grid row end up the same number of rows tall.
  */
 const LAYOUT = {
-  software: { span: "bento-12", columns: 2, reveal: "left", sectionReveal: null },
+  software: { span: "bento-12", columns: 2, reveal: "bottom" },
   immersive: { span: "bento-6", columns: 1, reveal: "left" },
   media: { span: "bento-6", columns: 1, reveal: "right" },
 };
+
+function ProjectRow({ project, reveal }) {
+  return (
+    <ExpandableBlock
+      detailId={project.detailId}
+      className="bento-row bento-row-project"
+      data-reveal={reveal}
+    >
+      <div className="bento-row-top">
+        <span className="bento-row-main">{project.name}</span>
+        <span className="bento-row-number">{project.number}</span>
+      </div>
+      <span className="bento-row-dates">{project.stack}</span>
+      <p className="bento-row-blurb">{project.description}</p>
+    </ExpandableBlock>
+  );
+}
 
 export default function ProjectsBoard() {
   const numbered = projects.map((project, index) => ({
@@ -65,8 +82,8 @@ export default function ProjectsBoard() {
           <section
             key={group.id}
             id={group.id}
-            className={`bento ${layout.span}${layout.columns === 2 ? " bento-split-rows" : ""}`}
-            {...(layout.sectionReveal !== null ? { "data-reveal": layout.sectionReveal ?? layout.reveal } : {})}
+            className={`bento ${layout.span}`}
+            data-reveal={layout.reveal}
           >
             <div className="bento-head">
               <h2 className="bento-title">{group.label}</h2>
@@ -75,20 +92,11 @@ export default function ProjectsBoard() {
             <p className="bento-note">{group.blurb}</p>
             <div className={`bento-rows${layout.columns === 2 ? " bento-rows-2" : ""}`}>
               {group.items.map((project, index) => (
-                <ExpandableBlock
+                <ProjectRow
                   key={project.name}
-                  detailId={project.detailId}
-                  className="bento-row bento-row-project"
-                  data-reveal={layout.columns === 2 ? (index % 2 === 0 ? "left" : "right") : layout.reveal}
-                  data-reveal-delay={`${Math.floor(index / 2) * 100}ms`}
-                >
-                  <div className="bento-row-top">
-                    <span className="bento-row-main">{project.name}</span>
-                    <span className="bento-row-number">{project.number}</span>
-                  </div>
-                  <span className="bento-row-dates">{project.stack}</span>
-                  <p className="bento-row-blurb">{project.description}</p>
-                </ExpandableBlock>
+                  project={project}
+                  reveal={layout.columns === 2 ? (index % 2 === 0 ? "left" : "right") : layout.reveal}
+                />
               ))}
             </div>
           </section>
