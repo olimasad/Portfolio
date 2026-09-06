@@ -881,6 +881,7 @@ main {
   text-transform: uppercase;
   color: var(--text-muted);
   font-weight: 500;
+  white-space: pre-line;
 }
 
 /* Keep the three stats side-by-side on phones; tighten type so labels still fit. */

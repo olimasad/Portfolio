@@ -87,7 +87,7 @@ export default function HomePage() {
   const wins = achievements.filter((item) => item.victory === true).length;
 
   const stats = [
-    { value: wins, label: "Hackathon Wins" },
+    { value: wins, label: "Hackathon\nWins" },
     { value: projects.length, label: "Projects Shipped" },
     { value: 3, label: "Years of Experience" },
   ];
