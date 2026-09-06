@@ -4377,9 +4377,19 @@ textarea:focus {
   }
 
   :root {
+    /*
+     * Side gutters felt too wide on phones (92vw + --space). Keep the same layout,
+     * but shrink the combined inset to about a quarter of what it was.
+     */
+    --space: calc((4vw + 1.35rem) / 4);
+    --max-width: 100%;
     --detail-modal-width: 100%;
     --detail-modal-min-height: min(72vh, 640px);
     --detail-modal-max-height: 92vh;
+  }
+
+  nav {
+    max-width: 100%;
   }
 
   .detail-modal-backdrop {
