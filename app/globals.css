@@ -894,15 +894,18 @@ main {
   .stats-band-item {
     padding: 0 clamp(0.35rem, 2vw, 0.85rem);
     border-left: 1px solid var(--line);
+    text-align: center;
+    justify-items: center;
   }
 
   .stats-band-item:first-child {
-    padding-left: 0;
+    padding-left: clamp(0.35rem, 2vw, 0.85rem);
     border-left: 0;
   }
 
   .stats-band-value {
     font-size: clamp(1.45rem, 7vw, 2.1rem);
+    justify-content: center;
   }
 
   .stats-band-label {
