@@ -1510,8 +1510,13 @@ a.bento-row:hover .bento-row-blurb {
   font-variant-numeric: tabular-nums;
 }
 
+/* Name + stack only — keep rows compact so later groups stay in view. */
+.bento-row-project {
+  gap: 0.12rem;
+  padding-block: 0.55rem;
+}
+
 /* Blurb lengths vary a lot, and unclamped they leave a two-column grid ragged. */
-.bento-row-project .bento-row-blurb,
 .bento-row-entry .bento-row-blurb {
   display: -webkit-box;
   -webkit-box-orient: vertical;

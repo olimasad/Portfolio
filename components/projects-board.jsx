@@ -26,7 +26,6 @@ function ProjectRow({ project, reveal }) {
         <span className="bento-row-number">{project.number}</span>
       </div>
       <span className="bento-row-dates">{project.stack}</span>
-      <p className="bento-row-blurb">{project.description}</p>
     </ExpandableBlock>
   );
 }
@@ -46,10 +45,8 @@ export default function ProjectsBoard() {
     <div className="bento-grid">
       <section className="bento bento-7" data-reveal="left">
         <h2 className="bento-title">Selected Work</h2>
-        <p className="bento-lead">
-          {numbered.length} builds across three very different disciplines, from AI-backed apps to VR
-          walkthroughs delivered for a general contractor. Every one has a write-up with the process
-          behind it.
+        <p className="bento-note">
+          {numbered.length} builds across software, VR, and media — open any row for the write-up.
         </p>
         <div className="bento-rows bento-index">
           {grouped.map((group) => (
@@ -68,7 +65,6 @@ export default function ProjectsBoard() {
           <h2 className="bento-title">Tools & Engines</h2>
           <span className="bento-count">{projectTools.length}</span>
         </div>
-        <p className="bento-note">What the work above was actually built in.</p>
         <div className="tool-cloud">
           {/* The tile already explains itself above, so the cloud stays quiet until a pick. */}
           <IconCloudPanel items={projectTools} maxSize={340} emptyTitle={null} emptyHint={null} />
@@ -89,7 +85,6 @@ export default function ProjectsBoard() {
               <h2 className="bento-title">{group.label}</h2>
               <span className="bento-count">{group.items.length}</span>
             </div>
-            <p className="bento-note">{group.blurb}</p>
             <div className={`bento-rows${layout.columns === 2 ? " bento-rows-2" : ""}`}>
               {group.items.map((project, index) => (
                 <ProjectRow

@@ -68,14 +68,11 @@ const competitions = [
   { detailId: "award-dialogue", title: "Dialogue 2026", result: "Track Award", size: "200+ participants" },
 ];
 
+/* Keep the dock light — same density as Projects / Achievements (3 jumps + page routes). */
 const dockSections = [
   { id: "about", label: "About Me", icon: "about" },
-  { id: "profile", label: "Profile", icon: "profile" },
   { id: "experience", label: "Experience", icon: "experience" },
-  { id: "education", label: "Education", icon: "education" },
-  { id: "competitions", label: "Competitions Won", icon: "competitions" },
-  { id: "volunteer", label: "Volunteer", icon: "volunteer" },
-  { id: "skills", label: "Technical Skills", icon: "skills" },
+  { id: "skills", label: "Skills", icon: "skills" },
 ];
 
 const volunteer = [
