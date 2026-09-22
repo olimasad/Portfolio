@@ -43,20 +43,20 @@ export default function DetailView({ detail, backHref = "/", backLabel = "Back" 
       </header>
 
       <div className="detail-page-layout">
-        <section className="detail-page-gallery section" data-reveal="left" aria-label="Gallery">
+        <section className="detail-page-gallery section" data-reveal="bottom" aria-label="Gallery">
           <DetailGallery items={detail.gallery} />
         </section>
 
-        <aside className="detail-page-side" data-reveal="right">
+        <aside className="detail-page-side">
           {detail.summary ? (
-            <section className="section detail-page-summary-card">
+            <section className="section detail-page-summary-card" data-reveal="right">
               <h2>Overview</h2>
               <p>{detail.summary}</p>
             </section>
           ) : null}
 
           {notes.length ? (
-            <section className="section detail-page-notes-card">
+            <section className="section detail-page-notes-card" data-reveal="right">
               <h2>Highlights</h2>
               <ul className="detail-page-notes">
                 {notes.map((item) => (
@@ -67,7 +67,7 @@ export default function DetailView({ detail, backHref = "/", backLabel = "Back" 
           ) : null}
 
           {links.length ? (
-            <section className="section detail-page-links-card">
+            <section className="section detail-page-links-card" data-reveal="right">
               <h2>Links</h2>
               <div className="detail-page-links">
                 {links.map((item) => (

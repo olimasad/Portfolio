@@ -150,7 +150,12 @@ window.scrollTo(0, 0);
       var parent = el.parentElement;
       var position = groupCounts.get(parent) || 0;
       groupCounts.set(parent, position + 1);
-      el.style.setProperty("--reveal-delay", Math.min(position * STAGGER_STEP_MS, STAGGER_MAX_MS) + "ms");
+      // Detail side cards cascade top→bottom from the right with a wider step so
+      // each clearly leads the next, while still overlapping mid-flight.
+      var isDetailSide = parent && parent.classList.contains("detail-page-side");
+      var step = isDetailSide ? 110 : STAGGER_STEP_MS;
+      var max = isDetailSide ? 330 : STAGGER_MAX_MS;
+      el.style.setProperty("--reveal-delay", Math.min(position * step, max) + "ms");
     });
 
     // Two-frame setup:
