@@ -10,7 +10,7 @@ const errorMessages = {
 };
 
 const channels = [
-  { label: "Email", value: "olimasad@gmail.com", href: "mailto:olimasad@gmail.com" },
+  { label: "Email", value: "nebula@oliverms.com", href: "mailto:nebula@oliverms.com" },
   { label: "Phone", value: "+1 418-262-8434", href: "tel:+14182628434" },
   { label: "CV", value: "PDF", href: cvHref, download: true },
   { label: "GitHub", value: "olimasad", href: "https://github.com/olimasad", external: true },
@@ -59,7 +59,7 @@ export default async function ContactPage({ searchParams }) {
             {errorMessage ?? (
               <>
                 Message could not be sent right now. Please email me directly at{" "}
-                <a href="mailto:olimasad@gmail.com">olimasad@gmail.com</a>.
+                <a href="mailto:nebula@oliverms.com">nebula@oliverms.com</a>.
               </>
             )}
           </div>
@@ -72,8 +72,8 @@ export default async function ContactPage({ searchParams }) {
               Internships, freelance builds, hackathon teams, or just a question about something on
               this site. The fastest way to reach me is email.
             </p>
-            <a className="contact-mail" href="mailto:olimasad@gmail.com">
-              olimasad@gmail.com
+            <a className="contact-mail" href="mailto:nebula@oliverms.com">
+              nebula@oliverms.com
             </a>
             <div className="contact-actions">
               <button type="button" className="btn btn-secondary btn-pill" id="emailbutton">

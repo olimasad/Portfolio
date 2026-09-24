@@ -72,7 +72,7 @@ window.scrollTo(0, 0);
   if (!btn) return;
 
   btn.addEventListener("click", function () {
-    navigator.clipboard.writeText("olimasad@gmail.com").then(
+    navigator.clipboard.writeText("nebula@oliverms.com").then(
       function () {
         var label = btn.textContent;
         btn.textContent = "Copied!";
