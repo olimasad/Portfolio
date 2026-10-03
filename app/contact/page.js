@@ -11,7 +11,6 @@ const errorMessages = {
 
 const channels = [
   { label: "Email", value: "olimasad@gmail.com", href: "mailto:olimasad@gmail.com" },
-  { label: "Phone", value: "+1 418-262-8434", href: "tel:+14182628434" },
   { label: "CV", value: "PDF", href: cvHref, download: true },
   { label: "GitHub", value: "olimasad", href: "https://github.com/olimasad", external: true },
   {
