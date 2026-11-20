@@ -36,19 +36,19 @@ export default async function ContactPage({ searchParams }) {
 
   return (
     <>
-      <header className="page-header hero-flat">
-        <h1 className="intro-item intro-name" data-reveal="scale">
-          Contact
-        </h1>
-        <p className="hero-kicker intro-item" data-reveal="top">
+      <header className="apple-hero apple-hero-page">
+        <p className="apple-eyebrow intro-item" data-reveal="top">
           Montreal, Canada
         </p>
-        <p className="intro-item" data-reveal="right">
-          Get in touch for opportunities or collaboration.
+        <h1 className="apple-hero-title intro-item intro-name" data-reveal="scale">
+          Contact
+        </h1>
+        <p className="apple-hero-sub intro-item" data-reveal="right">
+          Opportunities, collaboration, or a quick hello.
         </p>
       </header>
 
-      <div className="page-body">
+      <div className="page-body apple-home">
         {sent ? (
           <div className="msg-success" role="alert">
             Thanks! Your message has been sent. I&apos;ll get back to you soon.

@@ -12,14 +12,14 @@ function getStoredTheme() {
   } catch {
     /* ignore */
   }
-  return "dark";
+  return "light";
 }
 
 function applyTheme(theme) {
   document.documentElement.setAttribute("data-theme", theme);
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) {
-    meta.setAttribute("content", theme === "dark" ? "#171512" : "#f7f7f4");
+    meta.setAttribute("content", theme === "dark" ? "#2a2d35" : "#e0e5ec");
   }
 }
 
@@ -37,7 +37,7 @@ function setThemeVars(nextTheme) {
 }
 
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState("dark");
+  const [theme, setTheme] = useState("light");
   const [animating, setAnimating] = useState(false);
   const transitionTimer = useRef(null);
 
