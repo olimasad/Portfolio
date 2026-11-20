@@ -52,7 +52,7 @@ export async function POST(request) {
   const smtpPort = Number(process.env.SMTP_PORT || "465");
   const smtpUsername = process.env.SMTP_USERNAME;
   const smtpPassword = process.env.SMTP_PASSWORD;
-  const contactTo = process.env.CONTACT_TO_EMAIL || "olimasad@gmail.com";
+  const contactTo = process.env.CONTACT_TO_EMAIL || "nebula@oliverms.com";
   // Gmail and most providers reject a From address that isn't the authenticated account.
   const fromEmail = process.env.CONTACT_FROM_EMAIL || smtpUsername;
 

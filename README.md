@@ -28,5 +28,5 @@ Set these environment variables:
 - `SMTP_PORT` (default: `465`)
 - `SMTP_USERNAME` (your Gmail address)
 - `SMTP_PASSWORD` (your Gmail App Password, not your normal password)
-- `CONTACT_TO_EMAIL` (default: `olimasad@gmail.com`)
+- `CONTACT_TO_EMAIL` (default: `nebula@oliverms.com`)
 - `CONTACT_FROM_EMAIL` (optional, defaults to `SMTP_USERNAME`)
