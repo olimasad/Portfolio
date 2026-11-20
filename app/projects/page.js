@@ -15,19 +15,19 @@ const dockSections = projectGroups.map((group) => ({
 export default function ProjectsPage() {
   return (
     <>
-      <header className="page-header hero-flat">
-        <h1 className="intro-item intro-name" data-reveal="scale">
-          Projects
-        </h1>
-        <p className="hero-kicker intro-item" data-reveal="top">
+      <header className="apple-hero apple-hero-page">
+        <p className="apple-eyebrow intro-item" data-reveal="top">
           Software · VR & 3D · Media
         </p>
-        <p className="intro-item" data-reveal="right">
+        <h1 className="apple-hero-title intro-item intro-name" data-reveal="scale">
+          Projects
+        </h1>
+        <p className="apple-hero-sub intro-item" data-reveal="right">
           AI-powered and full-stack applications from concept to deployment.
         </p>
       </header>
 
-      <div className="page-body">
+      <div className="page-body apple-home">
         <PageDock sections={dockSections} currentHref="/projects" />
 
         <ProjectsBoard />

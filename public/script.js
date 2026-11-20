@@ -89,7 +89,7 @@ window.scrollTo(0, 0);
   var revealObserver = null;
   var prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   /* Keep in step with the .reveal transition in globals.css. */
-  var REVEAL_TRANSITION_MS = 420;
+  var REVEAL_TRANSITION_MS = 560;
   /* A hair past the end of the transition, so `reveal-done` never lands mid-frame. */
   var REVEAL_DONE_BUFFER_MS = 20;
   /*
@@ -99,7 +99,7 @@ window.scrollTo(0, 0);
    */
   var FAST_SCROLL_PX_PER_MS = 2.4;
   var revealSelectors =
-    ".section, .card:not(.project-item):not(.achievement-card), .contact-block, .form-section, .fact-card, .mini-card, .experience-card, .achievement-banner, .award-mini, .timeline-card, .chip, .skill-cloud span, .skill-cloud-tag, .expandable-block:not(.win-card-link), .bento, .bento-row, .win-card, .year-bar, .stats-band, .dock-anchor, .home-head, .track-heading, .skill-detail, .msg-success, .msg-error, .footer-links, footer p";
+    ".section, .card:not(.project-item):not(.achievement-card), .contact-block, .form-section, .fact-card, .mini-card, .experience-card, .achievement-banner, .award-mini, .timeline-card, .chip, .skill-cloud span, .skill-cloud-tag, .expandable-block:not(.win-card-link):not(.apple-entry):not(.apple-tile):not(.apple-win):not(.bento-row), .bento, .win-card, .year-bar, .stats-band, .dock-anchor, .home-head, .track-heading, .skill-detail, .msg-success, .msg-error, .apple-story, .apple-section, .apple-strip, .apple-panel, .apple-skills-shell, .apple-win-list, .apple-compare, .apple-duo, .entry-card";
   /*
    * Cards inside a shared parent cascade instead of all landing at once. The cap matters
    * more than the step: a long row used to keep filling in for most of a second after it
@@ -187,10 +187,9 @@ window.scrollTo(0, 0);
               }
             });
           },
-          // Pre-trigger below the fold so an entrance is already underway by the time the
-          // element is actually looked at. A negative bottom margin would leave anything
-          // pinned to the bottom of the page (the footer at max scroll) permanently unrevealed.
-          { threshold: 0.01, rootMargin: "0px 0px 20% 0px" }
+          // Halfway between the early default and the late -8% pass: visible on scroll
+          // without leaving footer/cards stuck half-offscreen waiting to trigger.
+          { threshold: 0.12, rootMargin: "0px 0px -4% 0px" }
         );
 
         revealTargets.forEach(function (el) {
@@ -253,7 +252,7 @@ window.scrollTo(0, 0);
 
   // Every page opens with the same choreography: the home hero plus any .intro-scope header.
   function runHeroIntro() {
-    document.querySelectorAll(".hero-flat, .intro-scope").forEach(playIntro);
+    document.querySelectorAll(".hero-flat, .intro-scope, .apple-hero").forEach(playIntro);
   }
 
   if (document.readyState === "loading") {
@@ -333,98 +332,10 @@ window.scrollTo(0, 0);
   }
 })();
 
-// Pointer-reactive soft highlight on cards and sections
+// Card tilt removed — it fought usability on the soft-UI surfaces.
 (function () {
-  var prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  // Bento rows are excluded: a tilt reads as noise on a thin list row, and tracking the
-  // pointer would fight the slide transition as you move along the row.
-  var selector =
-    ".section:not(.skill-cloud-panel), .card, .skill-group, .contact-block, .fact-card, .mini-card, .experience-card, .chip, .expandable-block:not(.skill-cloud-tag):not(.bento-row), .bento";
-
-  function bindInteractiveCard(el) {
-    if (!el || el.dataset.chromaBound === "1") return;
-    el.dataset.chromaBound = "1";
-
-    if (prefersReducedMotion) {
-      return;
-    }
-
-    // The entrance transform reads --rx/--ry, so writing them while the element is still
-    // arriving would retarget that transition and stall the entrance under the cursor.
-    function isRevealing() {
-      return el.classList.contains("reveal") && !el.classList.contains("reveal-done");
-    }
-
-    // Pointers fire far more often than the screen refreshes. Measuring and writing on
-    // every event forced a layout per event, which is what made scrolling with the
-    // cursor over a card stutter; now at most one read/write pair lands per frame.
-    var pendingEvent = null;
-    var moveFrame = 0;
-
-    function applyPointer() {
-      moveFrame = 0;
-      var event = pendingEvent;
-      pendingEvent = null;
-      if (!event) return;
-
-      var rect = el.getBoundingClientRect();
-      if (!rect.width || !rect.height) return;
-      var x = ((event.clientX - rect.left) / rect.width) * 100;
-      var y = ((event.clientY - rect.top) / rect.height) * 100;
-      var dx = (x - 50) / 50;
-      var dy = (y - 50) / 50;
-      el.style.setProperty("--mx", x + "%");
-      el.style.setProperty("--my", y + "%");
-      el.style.setProperty("--mouse-x", event.clientX - rect.left + "px");
-      el.style.setProperty("--mouse-y", event.clientY - rect.top + "px");
-      if (isRevealing()) return;
-      el.style.setProperty("--ry", (dx * 3).toFixed(2) + "deg");
-      el.style.setProperty("--rx", (-dy * 3).toFixed(2) + "deg");
-    }
-
-    el.addEventListener(
-      "mousemove",
-      function (event) {
-        pendingEvent = { clientX: event.clientX, clientY: event.clientY };
-        if (moveFrame) return;
-        moveFrame = window.requestAnimationFrame(applyPointer);
-      },
-      { passive: true }
-    );
-
-    el.addEventListener("mouseleave", function () {
-      pendingEvent = null;
-      if (moveFrame) {
-        window.cancelAnimationFrame(moveFrame);
-        moveFrame = 0;
-      }
-      el.style.setProperty("--mx", "-20%");
-      el.style.setProperty("--my", "-20%");
-      el.style.setProperty("--mouse-x", "50%");
-      el.style.setProperty("--mouse-y", "50%");
-      if (isRevealing()) return;
-      el.style.setProperty("--rx", "0deg");
-      el.style.setProperty("--ry", "0deg");
-    });
-  }
-
-  function setupInteractiveCards() {
-    var interactiveEls = document.querySelectorAll(selector);
-    if (!interactiveEls.length) return;
-
-    interactiveEls.forEach(function (el) {
-      bindInteractiveCard(el);
-    });
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", setupInteractiveCards, { once: true });
-  } else {
-    setupInteractiveCards();
-  }
-
-  // Re-bind for client-side route transitions and bfcache restores.
-  window.addEventListener("pageshow", setupInteractiveCards);
+  document.documentElement.style.setProperty("--rx", "0deg");
+  document.documentElement.style.setProperty("--ry", "0deg");
 })();
 
 // The hero used to drift on scroll. It moved at most 10px, but every scroll frame

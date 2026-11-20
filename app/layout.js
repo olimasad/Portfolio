@@ -1,13 +1,15 @@
 import Script from "next/script";
-import { Inter } from "next/font/google";
+import { Manrope } from "next/font/google";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
+import "./neumorphism.css";
 import SiteFrame from "../components/site-frame";
 
-const inter = Inter({
+const softSans = Manrope({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
+  variable: "--font-soft",
 });
 
 export const metadata = {
@@ -21,28 +23,31 @@ export const metadata = {
 };
 
 export const viewport = {
-  themeColor: "#171512",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#e0e5ec" },
+    { media: "(prefers-color-scheme: dark)", color: "#2a2d35" },
+  ],
 };
 
 const themeInitScript = `
 (function () {
   try {
     var stored = localStorage.getItem("theme");
-    var theme = stored === "light" ? "light" : "dark";
+    var theme = stored === "dark" ? "dark" : "light";
     document.documentElement.setAttribute("data-theme", theme);
   } catch (e) {
-    document.documentElement.setAttribute("data-theme", "dark");
+    document.documentElement.setAttribute("data-theme", "light");
   }
 })();
 `;
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" data-theme="dark" data-scroll-behavior="smooth" suppressHydrationWarning>
+    <html lang="en" data-theme="light" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
-      <body className={inter.className}>
+      <body className={`${softSans.variable} ${softSans.className}`}>
         <SiteFrame>{children}</SiteFrame>
         <Script src="/script.js" strategy="afterInteractive" />
         <SpeedInsights />

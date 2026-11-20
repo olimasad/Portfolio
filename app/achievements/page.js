@@ -14,19 +14,19 @@ const dockSections = [
 export default function AchievementsPage() {
   return (
     <>
-      <header className="page-header hero-flat">
-        <h1 className="intro-item intro-name" data-reveal="scale">
-          Achievements
-        </h1>
-        <p className="hero-kicker intro-item" data-reveal="top">
+      <header className="apple-hero apple-hero-page">
+        <p className="apple-eyebrow intro-item" data-reveal="top">
           Hackathons · CTFs · Competitions
         </p>
-        <p className="intro-item" data-reveal="right">
-          Hackathons, competitions, certificates, and milestone recognitions.
+        <h1 className="apple-hero-title intro-item intro-name" data-reveal="scale">
+          Achievements
+        </h1>
+        <p className="apple-hero-sub intro-item" data-reveal="right">
+          Wins, certificates, and milestones — one story at a time.
         </p>
       </header>
 
-      <div className="page-body">
+      <div className="page-body apple-home">
         <PageDock sections={dockSections} currentHref="/achievements" />
 
         <AchievementsBoard />

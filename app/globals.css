@@ -1,42 +1,62 @@
 @import "tailwindcss";
-/* Warm light portfolio theme */
+/* Soft UI / Neumorphism — clay extruded from one material */
 
 :root,
 html[data-theme="light"] {
   color-scheme: light;
-  --bg: #f7f7f4;
-  --bg-2: #f7f7f4;
-  --surface: #fffcf8;
-  --surface-soft: #faf6f0;
-  --surface-hover: #f3ede4;
-  --blue-tint: rgba(139, 115, 85, 0.06);
-  --blue-tint-strong: rgba(139, 115, 85, 0.1);
-  --blue-border: rgba(92, 74, 58, 0.16);
-  --text: #3d3429;
-  --text-muted: #5c5348;
-  --line: rgba(92, 74, 58, 0.12);
-  --line-strong: rgba(92, 74, 58, 0.22);
-  --accent: #8b7355;
-  --accent-hover: #756045;
-  --accent-soft: rgba(139, 115, 85, 0.12);
-  --accent-green: #9eb396;
-  --accent-green-soft: rgba(158, 179, 150, 0.22);
-  --success: #7a9e72;
-  --badge-winner-text: #806300;
-  --badge-winner-bg: rgba(238, 196, 62, 0.28);
-  --badge-participant-text: #765b3d;
-  --badge-participant-bg: rgba(190, 153, 111, 0.24);
-  --on-accent: #fffcf8;
-  --nav-bg: rgba(247, 247, 244, 0.92);
-  --overlay-bg: rgba(247, 247, 244, 0.72);
-  --panel-glow: rgba(255, 252, 248, 0.5);
-  --radius: 8px;
-  --radius-lg: 10px;
-  --shadow-soft: 0 1px 3px rgba(61, 52, 41, 0.06);
-  --shadow-card: 0 8px 24px rgba(61, 52, 41, 0.08);
-  --space: clamp(1.35rem, 3.2vw, 2.6rem);
-  --max-width: min(1420px, 92vw);
-  --nav-height: 62px;
+  --bg: #e6e9ef;
+  --bg-2: #e6e9ef;
+  --surface: #e6e9ef;
+  --surface-soft: #e6e9ef;
+  --surface-hover: #eef1f6;
+  --blue-tint: rgba(255, 107, 74, 0.08);
+  --blue-tint-strong: rgba(255, 107, 74, 0.14);
+  --blue-border: rgba(148, 163, 184, 0.35);
+  /* Darker type for Apple-like hierarchy on soft clay */
+  --text: #1f2937;
+  --text-muted: #5b6575;
+  --line: transparent;
+  --line-strong: transparent;
+  /* Coral accent — solves neumorphism's interactive contrast problem */
+  --accent: #ff6b4a;
+  --accent-hover: #ef5533;
+  --accent-soft: rgba(255, 107, 74, 0.16);
+  --accent-grad: linear-gradient(145deg, #ff8a6b 0%, #ff6b4a 55%, #f2553a 100%);
+  --accent-green: #5eb8a8;
+  --accent-green-soft: rgba(94, 184, 168, 0.2);
+  --success: #4f9f8c;
+  --badge-winner-text: #b45309;
+  --badge-winner-bg: rgba(251, 191, 36, 0.28);
+  --badge-participant-text: #64748b;
+  --badge-participant-bg: rgba(148, 163, 184, 0.28);
+  --on-accent: #ffffff;
+  --nav-bg: #e6e9ef;
+  --overlay-bg: rgba(230, 233, 239, 0.82);
+  --panel-glow: rgba(255, 255, 255, 0.45);
+  --radius: 18px;
+  --radius-lg: 28px;
+  --neu-light: rgba(255, 255, 255, 0.9);
+  --neu-dark: rgba(163, 177, 198, 0.65);
+  --neu-dark-strong: rgba(163, 177, 198, 0.85);
+  --shadow-soft:
+    -4px -4px 8px var(--neu-light),
+    4px 4px 8px var(--neu-dark);
+  --shadow-card:
+    -8px -8px 16px var(--neu-light),
+    8px 8px 16px var(--neu-dark);
+  --shadow-raised:
+    -5px -5px 10px var(--neu-light),
+    5px 5px 10px var(--neu-dark);
+  --shadow-pressed:
+    inset -2px -2px 5px var(--neu-light),
+    inset 2px 2px 5px var(--neu-dark-strong);
+  --shadow-inset:
+    inset 5px 5px 10px var(--neu-dark),
+    inset -5px -5px 10px var(--neu-light);
+  --shadow-flat: none;
+  --space: clamp(1rem, 1.8vw, 1.5rem);
+  --max-width: min(1880px, 98vw);
+  --nav-height: 72px;
 
   /*
    * Hover timing. The long tail on this curve is what makes a pointer move read as a
@@ -47,53 +67,70 @@ html[data-theme="light"] {
   --hover-dur: 460ms;
   --hover-dur-fast: 320ms;
 
-  /* Hover scale tuning: adjust these to change lift on hover */
-  --hover-scale-section: 1.018;        /* outer .section containers */
-  --hover-scale-experience: 1.035;     /* experience-grid cards */
-  --hover-scale-mini-card: 1.03;       /* fact-card, mini-card, award-mini */
-  --hover-scale-gallery-card: 1.07;    /* project & achievement cards */
-  --hover-scale-skill-tag: 1.02;       /* skill-cloud tags */
+  /* Hover scale tuning: soft UI presses in more than it lifts */
+  --hover-scale-section: 1;
+  --hover-scale-experience: 1;
+  --hover-scale-mini-card: 1;
+  --hover-scale-gallery-card: 1;
+  --hover-scale-skill-tag: 1;
 
   /* Detail modal: backdrop & poster panel */
-  --detail-backdrop-tint: rgba(247, 247, 244, 0.55);
+  --detail-backdrop-tint: rgba(224, 229, 236, 0.72);
   --detail-backdrop-blur: 22px;
   --detail-modal-width: min(1400px, 94vw);
   --detail-modal-min-height: min(68vh, 620px);
   --detail-modal-max-height: min(92vh, 960px);
 }
 
-/* Same warm palette, inverted for dark mode */
+/* Dark soft UI — matte charcoal clay with coral accent for the same contrast fix */
 html[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #171512;
-  --bg-2: #1c1916;
-  --surface: #221e1a;
-  --surface-soft: #2a2520;
-  --surface-hover: #342e28;
-  --blue-tint: rgba(196, 168, 130, 0.08);
-  --blue-tint-strong: rgba(196, 168, 130, 0.12);
-  --blue-border: rgba(196, 168, 130, 0.22);
-  --text: #f0ebe3;
-  --text-muted: #c4bbb0;
-  --line: rgba(240, 235, 227, 0.1);
-  --line-strong: rgba(240, 235, 227, 0.18);
-  --accent: #c4a882;
-  --accent-hover: #d4bc9a;
-  --accent-soft: rgba(196, 168, 130, 0.16);
-  --accent-green: #9eb396;
-  --accent-green-soft: rgba(158, 179, 150, 0.2);
-  --success: #8fb587;
-  --badge-winner-text: #f1d36a;
-  --badge-winner-bg: rgba(222, 178, 43, 0.2);
-  --badge-participant-text: #d8b990;
-  --badge-participant-bg: rgba(173, 128, 82, 0.22);
-  --on-accent: #1c1916;
-  --nav-bg: rgba(23, 21, 18, 0.92);
-  --overlay-bg: rgba(23, 21, 18, 0.72);
-  --panel-glow: rgba(196, 168, 130, 0.12);
-  --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.28);
-  --shadow-card: 0 10px 28px rgba(0, 0, 0, 0.38);
-  --detail-backdrop-tint: rgba(23, 21, 18, 0.62);
+  --bg: #2a2d35;
+  --bg-2: #2a2d35;
+  --surface: #2a2d35;
+  --surface-soft: #2a2d35;
+  --surface-hover: #32363f;
+  --blue-tint: rgba(255, 107, 74, 0.1);
+  --blue-tint-strong: rgba(255, 107, 74, 0.16);
+  --blue-border: rgba(255, 107, 74, 0.28);
+  --text: #f3f4f6;
+  --text-muted: #a8b0bf;
+  --line: transparent;
+  --line-strong: transparent;
+  --accent: #ff7a5c;
+  --accent-hover: #ff947c;
+  --accent-soft: rgba(255, 122, 92, 0.18);
+  --accent-grad: linear-gradient(145deg, #ff947c 0%, #ff7a5c 55%, #f45d3d 100%);
+  --accent-green: #2dd4bf;
+  --accent-green-soft: rgba(45, 212, 191, 0.18);
+  --success: #34d399;
+  --badge-winner-text: #fbbf24;
+  --badge-winner-bg: rgba(251, 191, 36, 0.18);
+  --badge-participant-text: #94a3b8;
+  --badge-participant-bg: rgba(148, 163, 184, 0.16);
+  --on-accent: #1a1210;
+  --nav-bg: #2a2d35;
+  --overlay-bg: rgba(42, 45, 53, 0.82);
+  --panel-glow: rgba(255, 122, 92, 0.12);
+  --neu-light: rgba(255, 255, 255, 0.12);
+  --neu-dark: rgba(0, 0, 0, 0.55);
+  --neu-dark-strong: rgba(0, 0, 0, 0.7);
+  --shadow-soft:
+    -5px -5px 12px var(--neu-light),
+    5px 5px 14px var(--neu-dark);
+  --shadow-card:
+    -9px -9px 20px var(--neu-light),
+    10px 10px 22px var(--neu-dark);
+  --shadow-raised:
+    -6px -6px 14px var(--neu-light),
+    6px 6px 14px var(--neu-dark);
+  --shadow-pressed:
+    inset -3px -3px 8px var(--neu-light),
+    inset 3px 3px 8px var(--neu-dark-strong);
+  --shadow-inset:
+    inset 6px 6px 14px var(--neu-dark),
+    inset -6px -6px 14px var(--neu-light);
+  --detail-backdrop-tint: rgba(42, 45, 53, 0.78);
 }
 
 *,
@@ -207,7 +244,7 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: var(--font-soft), 'Manrope', 'SF Pro Display', system-ui, sans-serif;
   color: var(--text);
   line-height: 1.75;
   background: var(--bg);
@@ -434,10 +471,10 @@ body.cursor-active .cursor-blur {
 }
 
 nav {
-  max-width: min(1520px, 94vw);
+  max-width: min(1920px, 99vw);
   margin: 0 auto;
   height: var(--nav-height);
-  padding: 0 calc(var(--space) * 0.88);
+  padding: 0 calc(var(--space) * 0.7);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -791,15 +828,16 @@ main {
   --hover-scale: 1;
   padding: 0.28rem 0.62rem;
   border-radius: 999px;
-  border: 1px solid var(--line);
+  border: 1px solid transparent;
   background: var(--surface-soft);
   color: var(--text-muted);
   font-size: 0.78rem;
   letter-spacing: 0.02em;
   transform: none;
-  transition: border-color var(--hover-dur-fast) var(--hover-ease),
-    background var(--hover-dur-fast) var(--hover-ease),
-    color var(--hover-dur-fast) var(--hover-ease);
+  transition:
+    box-shadow var(--hover-dur-fast) var(--hover-ease),
+    color var(--hover-dur-fast) var(--hover-ease),
+    background var(--hover-dur-fast) var(--hover-ease);
   animation: none;
 }
 
@@ -810,9 +848,7 @@ main {
 
 .pill:hover {
   --hover-scale: 1;
-  border-color: var(--line-strong);
-  background: var(--surface-hover);
-  color: var(--text);
+  color: var(--accent);
 }
 
 .home-grid {
@@ -3245,7 +3281,6 @@ html[data-theme="dark"] .achievement-track .achievement-card h2 {
 
 .btn-primary:hover {
   background: var(--accent-hover);
-  box-shadow: none;
   animation: none;
 }
 
@@ -3954,7 +3989,8 @@ footer p { margin: 0 0 0.24rem; }
 }
 
 .hero-flat .intro-item,
-.intro-scope .intro-item {
+.intro-scope .intro-item,
+.apple-hero .intro-item {
   opacity: 0;
   --intro-x: 0px;
   --intro-y: 0px;
@@ -3964,28 +4000,36 @@ footer p { margin: 0 0 0.24rem; }
 }
 
 .hero-flat .intro-item[data-reveal="left"],
-.intro-scope .intro-item[data-reveal="left"] { --intro-x: -44px; }
+.intro-scope .intro-item[data-reveal="left"],
+.apple-hero .intro-item[data-reveal="left"] { --intro-x: -44px; }
 .hero-flat .intro-item[data-reveal="right"],
-.intro-scope .intro-item[data-reveal="right"] { --intro-x: 44px; }
+.intro-scope .intro-item[data-reveal="right"],
+.apple-hero .intro-item[data-reveal="right"] { --intro-x: 44px; }
 .hero-flat .intro-item[data-reveal="top"],
-.intro-scope .intro-item[data-reveal="top"] { --intro-y: -34px; }
+.intro-scope .intro-item[data-reveal="top"],
+.apple-hero .intro-item[data-reveal="top"] { --intro-y: -34px; }
 .hero-flat .intro-item[data-reveal="bottom"],
-.intro-scope .intro-item[data-reveal="bottom"] { --intro-y: 34px; }
-.hero-flat .intro-item[data-reveal="scale"] { --intro-y: 0px; --intro-x: 0px; transform: scale(1.28); }
+.intro-scope .intro-item[data-reveal="bottom"],
+.apple-hero .intro-item[data-reveal="bottom"] { --intro-y: 34px; }
+.hero-flat .intro-item[data-reveal="scale"],
+.apple-hero .intro-item[data-reveal="scale"] { --intro-y: 0px; --intro-x: 0px; transform: scale(1.28); }
 .intro-scope .intro-item[data-reveal="scale"] { --intro-y: 0px; --intro-x: 0px; transform: scale(1.18); }
 
 .hero-flat .intro-item.intro-in,
-.intro-scope .intro-item.intro-in {
+.intro-scope .intro-item.intro-in,
+.apple-hero .intro-item.intro-in {
   opacity: 1;
   transform: translate3d(0, 0, 0) scale(1);
   filter: blur(0);
 }
 
-.hero-flat.hero-complete .intro-item:not(.intro-name) {
+.hero-flat.hero-complete .intro-item:not(.intro-name),
+.apple-hero.hero-complete .intro-item:not(.intro-name) {
   transform: translate3d(0, 0, 0) scale(0.98);
 }
 
-.hero-flat.hero-complete .intro-name {
+.hero-flat.hero-complete .intro-name,
+.apple-hero.hero-complete .intro-name {
   transform: translate3d(0, 0, 0) scale(1);
 }
 
