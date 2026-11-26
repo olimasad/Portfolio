@@ -9,7 +9,8 @@ import IconCloudPanel from "./icon-cloud-panel";
  * are picked so that tiles sharing a grid row end up the same number of rows tall.
  */
 const LAYOUT = {
-  software: { span: "bento-12", columns: 2, reveal: "bottom" },
+  /* Wide page: 4 cols turns a lanky 2×5 into a denser 4×2 + 2 */
+  software: { span: "bento-12", columns: 4, reveal: "bottom" },
   immersive: { span: "bento-6", columns: 1, reveal: "left" },
   media: { span: "bento-6", columns: 1, reveal: "right" },
 };
@@ -85,12 +86,30 @@ export default function ProjectsBoard() {
               <h2 className="bento-title">{group.label}</h2>
               <span className="bento-count">{group.items.length}</span>
             </div>
-            <div className={`bento-rows${layout.columns === 2 ? " bento-rows-2" : ""}`}>
+            <div
+              className={`bento-rows${
+                layout.columns === 4
+                  ? " bento-rows-4"
+                  : layout.columns === 3
+                    ? " bento-rows-3"
+                    : layout.columns === 2
+                      ? " bento-rows-2"
+                      : ""
+              }`}
+            >
               {group.items.map((project, index) => (
                 <ProjectRow
                   key={project.name}
                   project={project}
-                  reveal={layout.columns === 2 ? (index % 2 === 0 ? "left" : "right") : layout.reveal}
+                  reveal={
+                    layout.columns > 1
+                      ? index % layout.columns === 0
+                        ? "left"
+                        : index % layout.columns === layout.columns - 1
+                          ? "right"
+                          : "bottom"
+                      : layout.reveal
+                  }
                 />
               ))}
             </div>

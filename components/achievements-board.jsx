@@ -158,7 +158,7 @@ export default function AchievementsBoard() {
           Everything else entered, from CTFs and engineering challenges to the teams and programs
           around them.
         </p>
-        <div className="bento-rows bento-rows-3">
+        <div className="bento-rows bento-rows-4">
           {experiences.map((achievement) => (
             <EntryRow key={achievement.slug} achievement={achievement} reveal="left" />
           ))}

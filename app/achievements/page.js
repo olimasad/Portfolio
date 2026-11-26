@@ -26,7 +26,7 @@ export default function AchievementsPage() {
         </p>
       </header>
 
-      <div className="page-body apple-home">
+      <div className="page-body apple-home apple-home-wide">
         <PageDock sections={dockSections} currentHref="/achievements" />
 
         <AchievementsBoard />

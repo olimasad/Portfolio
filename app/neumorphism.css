@@ -19,6 +19,83 @@ body {
 }
 
 /*
+ * Homepage atmosphere — locked to the viewport, fades out past the hero
+ * so lower sections sit on clean clay instead of a playing film.
+ */
+.home-atmosphere {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: auto;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100vh;
+  max-height: 100dvh;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  transform: none;
+  will-change: opacity;
+  transition: opacity 0.12s linear;
+}
+
+.home-atmosphere-video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transform: none;
+  filter: saturate(0.82) contrast(0.94) brightness(0.9);
+}
+
+.home-atmosphere-wash {
+  position: absolute;
+  inset: 0;
+  /* Stronger clay mix so the film reads as atmosphere, not a full-page movie */
+  background:
+    radial-gradient(ellipse 90% 75% at 50% 20%, color-mix(in srgb, var(--bg) 35%, transparent), transparent 72%),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--bg) 55%, transparent) 0%,
+      color-mix(in srgb, var(--bg) 62%, transparent) 50%,
+      color-mix(in srgb, var(--bg) 72%, transparent) 100%
+    ),
+    color-mix(in srgb, var(--bg) 58%, transparent);
+}
+
+body:has(.home-atmosphere) .nav-wrap {
+  z-index: 100;
+}
+
+body:has(.home-atmosphere) main,
+body:has(.home-atmosphere) footer {
+  position: relative;
+  z-index: 1;
+}
+
+body:has(.home-atmosphere) {
+  background: var(--bg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-atmosphere-video {
+    display: none;
+  }
+
+  .home-atmosphere {
+    background:
+      url("/media/home-atmosphere-poster.jpg") center / cover no-repeat;
+  }
+
+  .home-atmosphere-wash {
+    background: color-mix(in srgb, var(--bg) 62%, transparent);
+  }
+}
+
+/*
  * Text selection — solid brand fill (Apple-style).
  * Overlap math: selection height ≈ line-height. Below 1, boxes stack and a
  * translucent wash double-exposes a darker band. Opaque accent hides any
@@ -119,6 +196,7 @@ nav ul {
   box-shadow: none;
 }
 
+/* Sliding pod behind the active / hovered link */
 nav ul::before {
   bottom: 0.35rem;
   height: calc(100% - 0.7rem);
@@ -138,6 +216,8 @@ nav ul a {
   border-radius: 999px;
   border-bottom: 0;
   letter-spacing: 0.06em;
+  /* Keep weight steady — 500→700 was shifting the row by a couple of pixels */
+  font-weight: 700;
   transition:
     color var(--hover-dur-fast) var(--hover-ease),
     box-shadow var(--hover-dur-fast) var(--hover-ease),
@@ -149,7 +229,6 @@ nav ul a.active {
   color: var(--accent);
   border-bottom-color: transparent;
   background: transparent;
-  font-weight: 700;
 }
 
 nav ul[data-nav-marker="off"] a.active,
@@ -300,39 +379,19 @@ nav ul[data-nav-marker="off"] a:hover {
 
 .apple-cta-slide {
   position: relative;
-  flex-wrap: nowrap;
-  gap: 0.35rem;
-  padding: 0.2rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.65rem;
+  padding: 0;
   width: fit-content;
   margin-inline: auto;
+  background: transparent;
+  box-shadow: none;
 }
 
+/* Sliding highlight retired — each CTA is its own soft raised control */
 .apple-cta-pill {
-  position: absolute;
-  top: 0.2rem;
-  left: 0;
-  bottom: 0.2rem;
-  border-radius: 999px;
-  background: var(--accent-grad);
-  box-shadow:
-    0 10px 22px color-mix(in srgb, var(--accent) 35%, transparent),
-    -3px -3px 8px var(--neu-light),
-    4px 4px 10px var(--neu-dark);
-  pointer-events: none;
-  opacity: 0;
-  z-index: 0;
-  transition:
-    transform 0.38s cubic-bezier(0.22, 1, 0.36, 1),
-    width 0.38s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.2s ease;
-}
-
-.apple-cta-pill.is-ready {
-  opacity: 1;
-}
-
-.apple-cta-pill.is-instant {
-  transition: opacity 0.2s ease;
+  display: none !important;
 }
 
 .apple-cta-item {
@@ -342,51 +401,95 @@ nav ul[data-nav-marker="off"] a:hover {
   align-items: center;
   justify-content: center;
   padding: 0.72rem 1.25rem;
-  border: 0;
-  border-radius: 999px;
-  background: transparent !important;
-  box-shadow: none !important;
-  color: var(--accent) !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: var(--surface) !important;
+  color: var(--text) !important;
   font-size: 1.02rem;
   font-weight: 650;
   letter-spacing: 0.01em;
   text-decoration: none !important;
   white-space: nowrap;
-  transition: color 0.22s ease;
+  box-shadow:
+    -5px -5px 10px var(--neu-light),
+    5px 5px 10px var(--neu-dark),
+    inset 0 0 0 transparent,
+    inset 0 0 0 transparent !important;
+  transition:
+    box-shadow var(--hover-dur-fast) var(--hover-ease),
+    color var(--hover-dur-fast) var(--hover-ease),
+    background var(--hover-dur-fast) var(--hover-ease),
+    transform 180ms var(--hover-ease) !important;
 }
 
-.apple-cta-item.is-active,
+.apple-cta-item:hover,
 .apple-cta-item:focus-visible {
+  color: var(--accent) !important;
+  background: var(--surface) !important;
+  box-shadow:
+    -1px -1px 5px var(--neu-light),
+    1px 1px 5px var(--neu-dark),
+    inset -2px -2px 5px var(--neu-light),
+    inset 2px 2px 4px var(--neu-dark-strong) !important;
+  outline: none;
+}
+
+.apple-cta-item.is-active {
   color: var(--on-accent) !important;
+  background: var(--accent-grad) !important;
+  box-shadow:
+    0 10px 22px color-mix(in srgb, var(--accent) 32%, transparent),
+    -3px -3px 8px var(--neu-light),
+    4px 4px 10px var(--neu-dark) !important;
 }
 
-.apple-cta-item:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
-  outline-offset: 3px;
+.apple-cta-item.is-active:hover,
+.apple-cta-item.is-active:focus-visible {
+  color: var(--on-accent) !important;
+  background: var(--accent-hover) !important;
+  box-shadow:
+    0 6px 16px color-mix(in srgb, var(--accent) 40%, transparent),
+    inset -1px -1px 4px rgba(255, 255, 255, 0.28),
+    inset 2px 2px 6px rgba(0, 0, 0, 0.18) !important;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .apple-cta-pill {
-    transition: opacity 0.15s ease;
-  }
+.apple-cta-item:active {
+  transform: scale(0.98) !important;
 }
 
 .apple-text-link {
-  color: var(--accent) !important;
-  font-size: 1.05rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 0.95rem !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  font-size: 1.02rem;
   font-weight: 600;
   text-decoration: none !important;
-  border-bottom: 0 !important;
-  box-shadow: none !important;
-  background: none !important;
-  padding: 0.35rem 0.15rem;
-  transition: color var(--hover-dur-fast) var(--hover-ease), opacity var(--hover-dur-fast) var(--hover-ease);
+  box-shadow:
+    -5px -5px 10px var(--neu-light),
+    5px 5px 10px var(--neu-dark),
+    inset 0 0 0 transparent,
+    inset 0 0 0 transparent !important;
+  transition:
+    box-shadow var(--hover-dur-fast) var(--hover-ease),
+    color var(--hover-dur-fast) var(--hover-ease),
+    background var(--hover-dur-fast) var(--hover-ease) !important;
 }
 
 .apple-text-link:hover,
 .apple-text-link:focus-visible {
-  color: var(--accent-hover) !important;
-  opacity: 0.85;
+  color: var(--accent) !important;
+  opacity: 1;
+  background: var(--surface) !important;
+  box-shadow:
+    -1px -1px 5px var(--neu-light),
+    1px 1px 5px var(--neu-dark),
+    inset -2px -2px 5px var(--neu-light),
+    inset 2px 2px 4px var(--neu-dark-strong) !important;
 }
 
 .apple-home {
@@ -394,37 +497,57 @@ nav ul[data-nav-marker="off"] a:hover {
   margin-inline: auto;
 }
 
+/*
+ * Shared desktop content width — Projects / Achievements / detail pages.
+ * Halves the old side gutters vs the 1120px home column, without going edge-to-edge.
+ */
+:root {
+  --content-wide: min(calc((100vw + 1120px) / 2), 96vw);
+}
+
+.apple-home-wide {
+  max-width: var(--content-wide);
+}
+
+/* Detail pages used to run nearly full-bleed (98vw); match the listing gutters on desktop */
+@media (min-width: 901px) {
+  .detail-page {
+    max-width: var(--content-wide);
+    width: 100%;
+    margin-inline: auto;
+    box-sizing: border-box;
+  }
+}
+
 .apple-strip {
   padding: 0;
 }
 
 .apple-strip .stats-band {
-  gap: 0;
-  padding: clamp(1.6rem, 3vw, 2.4rem) 0;
+  gap: clamp(0.75rem, 1.6vw, 1.25rem);
+  padding: clamp(0.9rem, 2vw, 1.35rem);
   border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-  border-top: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
-  border-bottom: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-inset);
 }
 
 .apple-strip .stats-band-item {
-  padding: 0.4rem 1rem;
+  padding: clamp(0.9rem, 1.6vw, 1.25rem) clamp(0.7rem, 1.4vw, 1.1rem);
   border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-  border-left: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-raised);
+  border-left: 0;
 }
 
 .apple-strip .stats-band-item:first-child {
   border-left: 0;
-  padding-left: 1rem;
+  padding-left: clamp(0.7rem, 1.4vw, 1.1rem);
 }
 
 .apple-strip .stats-band-value {
-  font-size: clamp(2.4rem, 4.5vw, 3.4rem);
+  font-size: clamp(2.2rem, 4vw, 3.1rem);
   font-weight: 700;
   letter-spacing: -0.04em;
 }
@@ -524,9 +647,6 @@ nav ul[data-nav-marker="off"] a:hover {
   grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
-.apple-tile,
-.apple-entry,
-.apple-win,
 .apple-panel,
 .apple-skills-shell {
   border: 0;
@@ -536,6 +656,29 @@ nav ul[data-nav-marker="off"] a:hover {
   color: inherit;
   text-decoration: none;
   transition: box-shadow var(--hover-dur) var(--hover-ease), background var(--hover-dur-fast) var(--hover-ease);
+}
+
+/*
+ * Interactive clay controls — same 4-layer raised → pressed recipe as nav / .btn
+ * so the shadow interpolates instead of jumping between unrelated stacks.
+ */
+.apple-tile,
+.apple-entry,
+.apple-win {
+  border: 0;
+  border-radius: calc(var(--radius-lg) - 4px);
+  background: var(--surface);
+  color: inherit;
+  text-decoration: none;
+  box-shadow:
+    -5px -5px 10px var(--neu-light),
+    5px 5px 10px var(--neu-dark),
+    inset 0 0 0 transparent,
+    inset 0 0 0 transparent;
+  transition:
+    box-shadow 180ms var(--hover-ease),
+    background 180ms var(--hover-ease),
+    color 180ms var(--hover-ease);
 }
 
 .expandable-block.apple-tile,
@@ -557,6 +700,10 @@ main:has(.apple-hero) .apple-home {
   max-width: min(1120px, 92vw);
 }
 
+main:has(.apple-hero) .apple-home.apple-home-wide {
+  max-width: var(--content-wide);
+}
+
 .apple-tile {
   display: grid;
   gap: 0.35rem;
@@ -567,11 +714,17 @@ main:has(.apple-hero) .apple-home {
 
 .apple-tile:hover,
 .apple-entry:hover,
-.apple-win:hover {
-  background: color-mix(in srgb, var(--accent) 7%, var(--surface));
+.apple-win:hover,
+.apple-tile:focus-visible,
+.apple-entry:focus-visible,
+.apple-win:focus-visible {
+  background: var(--surface);
+  color: var(--accent);
   box-shadow:
-    -8px -8px 18px var(--neu-light),
-    8px 8px 18px var(--neu-dark);
+    -1px -1px 5px var(--neu-light),
+    1px 1px 5px var(--neu-dark),
+    inset -2px -2px 5px var(--neu-light),
+    inset 2px 2px 4px var(--neu-dark-strong);
 }
 
 .apple-tile-label,
@@ -581,11 +734,15 @@ main:has(.apple-hero) .apple-home {
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--text);
+  transition: color 180ms var(--hover-ease);
 }
 
 .apple-tile:hover .apple-tile-label,
 .apple-entry:hover .apple-entry-name,
-.apple-win:hover .apple-win-title {
+.apple-win:hover .apple-win-title,
+.apple-tile:focus-visible .apple-tile-label,
+.apple-entry:focus-visible .apple-entry-name,
+.apple-win:focus-visible .apple-win-title {
   color: var(--accent);
 }
 
@@ -633,7 +790,6 @@ main:has(.apple-hero) .apple-home {
   display: grid;
   gap: 0.25rem;
   padding: 1rem 1.05rem;
-  box-shadow: var(--shadow-inset);
   overflow: hidden;
   min-width: 0;
   max-width: 100%;
@@ -675,6 +831,10 @@ main:has(.apple-hero) .apple-home {
 
 .apple-skills-shell {
   padding: clamp(1.2rem, 2vw, 1.8rem);
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: visible;
 }
 
 .apple-section-skills .home-skills {
@@ -720,20 +880,24 @@ main:has(.apple-hero) .apple-home {
     gap: 0.75rem;
   }
 
+  /* Stack hero CTAs on narrow viewports so raised soft pills never clip. */
   .apple-cta-slide {
+    width: min(100%, 17.5rem);
     max-width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-
-  .apple-cta-slide::-webkit-scrollbar {
-    display: none;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 0.55rem;
+    overflow: visible;
+    padding: 0;
   }
 
   .apple-cta-item {
-    padding: 0.65rem 1rem;
-    font-size: 0.95rem;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.72rem 1.1rem;
+    font-size: 0.98rem;
+    justify-content: center;
   }
 }
 
@@ -895,7 +1059,7 @@ a.btn-primary:active {
   padding: 0.4rem 0.95rem;
 }
 
-/* Quiet external links — no full-bleed footer bar, no heavy raised pill */
+/* External links use the same soft raised → pressed glide as .pill / .btn */
 .entry-card-external,
 .win-card-external {
   display: inline-flex !important;
@@ -905,20 +1069,26 @@ a.btn-primary:active {
   max-width: 100%;
   box-sizing: border-box;
   margin: 0.5rem 0 0.1rem !important;
-  padding: 0.38rem 0.85rem !important;
+  padding: 0.4rem 0.9rem !important;
   border: 0 !important;
   border-radius: 999px !important;
   border-top: 0 !important;
-  background: color-mix(in srgb, var(--accent) 12%, var(--surface)) !important;
-  color: var(--accent) !important;
-  box-shadow: none !important;
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  box-shadow:
+    -5px -5px 10px var(--neu-light),
+    5px 5px 10px var(--neu-dark),
+    inset 0 0 0 transparent,
+    inset 0 0 0 transparent !important;
   font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: 0.03em;
   text-decoration: none !important;
   transition:
+    box-shadow var(--hover-dur-fast) var(--hover-ease),
+    color var(--hover-dur-fast) var(--hover-ease),
     background var(--hover-dur-fast) var(--hover-ease),
-    color var(--hover-dur-fast) var(--hover-ease) !important;
+    transform 180ms var(--hover-ease) !important;
 }
 
 .win-card-external {
@@ -929,10 +1099,19 @@ a.btn-primary:active {
 .entry-card-external:focus-visible,
 .win-card-external:hover,
 .win-card-external:focus-visible {
-  background: color-mix(in srgb, var(--accent) 20%, var(--surface)) !important;
-  color: var(--accent-hover) !important;
-  box-shadow: none !important;
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface)) !important;
+  color: var(--accent) !important;
+  box-shadow:
+    -1px -1px 5px var(--neu-light),
+    1px 1px 5px var(--neu-dark),
+    inset -2px -2px 5px var(--neu-light),
+    inset 2px 2px 4px var(--neu-dark-strong) !important;
   transform: none !important;
+}
+
+.entry-card-external:active,
+.win-card-external:active {
+  transform: scale(0.98) !important;
 }
 
 /* ---------- Stats band: three raised wells ---------- */
@@ -1115,34 +1294,48 @@ a.btn-primary:active {
   margin-top: 0.35rem;
   padding: 0.75rem 0.85rem !important;
   background: var(--surface);
-  /* Carved into the parent tile — classic soft-UI nesting */
-  box-shadow: var(--shadow-inset);
+  /* Raised clay — presses in on hover like nav / profile tiles */
+  box-shadow:
+    -5px -5px 10px var(--neu-light),
+    5px 5px 10px var(--neu-dark),
+    inset 0 0 0 transparent,
+    inset 0 0 0 transparent;
   transition:
-    box-shadow var(--hover-dur) var(--hover-ease),
-    color var(--hover-dur) var(--hover-ease);
+    box-shadow 180ms var(--hover-ease),
+    background 180ms var(--hover-ease),
+    color 180ms var(--hover-ease);
 }
 
 .bento-row:first-child,
 .bento-rows-2 > .bento-row:nth-child(-n + 2),
 .bento-rows-2 > .entry-card:nth-child(-n + 2),
 .bento-rows-3 > .bento-row:nth-child(-n + 3),
-.bento-rows-3 > .entry-card:nth-child(-n + 3) {
+.bento-rows-3 > .entry-card:nth-child(-n + 3),
+.bento-rows-4 > .bento-row:nth-child(-n + 4),
+.bento-rows-4 > .entry-card:nth-child(-n + 4) {
   border-top: 0 !important;
   padding-top: 0.75rem !important;
 }
 
 a.bento-row:hover,
-.expandable-block.bento-row:hover {
-  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+.expandable-block.bento-row:hover,
+a.bento-row:focus-visible,
+.expandable-block.bento-row:focus-visible,
+.entry-card:hover {
+  background: var(--surface);
   box-shadow:
-    inset 7px 7px 14px var(--neu-dark),
-    inset -7px -7px 14px var(--neu-light);
+    -1px -1px 5px var(--neu-light),
+    1px 1px 5px var(--neu-dark),
+    inset -2px -2px 5px var(--neu-light),
+    inset 2px 2px 4px var(--neu-dark-strong);
   transform: none;
-  color: var(--text);
+  color: var(--accent);
 }
 
 a.bento-row:hover .bento-row-main,
-.expandable-block.bento-row:hover .bento-row-main {
+.expandable-block.bento-row:hover .bento-row-main,
+a.bento-row:focus-visible .bento-row-main,
+.expandable-block.bento-row:focus-visible .bento-row-main {
   color: var(--accent);
 }
 
@@ -1158,12 +1351,15 @@ a.bento-row:hover .bento-row-main,
   box-sizing: border-box;
 }
 
-.entry-card > .bento-row {
-  box-shadow: none;
+.entry-card > .bento-row,
+.entry-card > .bento-row:hover,
+.entry-card > .bento-row:focus-visible {
+  box-shadow: none !important;
   margin: 0;
   padding: 0 !important;
-  background: transparent;
+  background: transparent !important;
   border-radius: 0;
+  color: inherit;
 }
 
 /* ---------- Win cards & year bars ---------- */
@@ -1171,15 +1367,26 @@ a.bento-row:hover .bento-row-main,
   border: 0;
   border-radius: var(--radius);
   background: var(--surface);
-  box-shadow: var(--shadow-raised);
+  box-shadow:
+    -5px -5px 10px var(--neu-light),
+    5px 5px 10px var(--neu-dark),
+    inset 0 0 0 transparent,
+    inset 0 0 0 transparent;
   overflow: visible;
   min-width: 0;
+  transition:
+    box-shadow 180ms var(--hover-ease),
+    color 180ms var(--hover-ease);
 }
 
 .win-card:hover {
   transform: none;
   border-color: transparent;
-  box-shadow: var(--shadow-pressed);
+  box-shadow:
+    -1px -1px 5px var(--neu-light),
+    1px 1px 5px var(--neu-dark),
+    inset -2px -2px 5px var(--neu-light),
+    inset 2px 2px 4px var(--neu-dark-strong);
 }
 
 .win-card-result {
@@ -1412,10 +1619,45 @@ footer {
 /* ---------- Badges ---------- */
 .badge,
 .card .badge,
-.gallery-item .badge {
+.gallery-item .badge,
+.badge-winner,
+.gallery-item .badge.badge-winner,
+.card .badge.badge-winner,
+.badge-cert,
+.badge-participant,
+.card .badge.badge-participant {
   border: 0 !important;
-  border-radius: 999px;
-  box-shadow: var(--shadow-soft);
+  border-radius: 999px !important;
+  box-shadow:
+    -4px -4px 8px var(--neu-light),
+    4px 4px 8px var(--neu-dark),
+    inset 0 0 0 transparent,
+    inset 0 0 0 transparent !important;
+}
+
+.badge,
+.card .badge,
+.gallery-item .badge {
+  background: var(--surface) !important;
+  color: var(--text-muted) !important;
+}
+
+.badge-winner,
+.gallery-item .badge.badge-winner,
+.card .badge.badge-winner {
+  color: var(--badge-winner-text) !important;
+  background: var(--badge-winner-bg) !important;
+}
+
+.badge-cert {
+  color: var(--success) !important;
+  background: var(--accent-green-soft) !important;
+}
+
+.badge-participant,
+.card .badge.badge-participant {
+  color: var(--badge-participant-text) !important;
+  background: var(--badge-participant-bg) !important;
 }
 
 /* ---------- Detail / modal / gallery ---------- */
@@ -1510,18 +1752,59 @@ html[data-theme="dark"] .achievement-track .achievement-card h2 {
   box-shadow: var(--shadow-card);
 }
 
+.icon-cloud-legend button,
 .icon-cloud-legend:focus-within button {
-  border: 0;
-  box-shadow: var(--shadow-raised);
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: var(--surface) !important;
+  color: var(--text-muted) !important;
+  box-shadow:
+    -5px -5px 10px var(--neu-light),
+    5px 5px 10px var(--neu-dark),
+    inset 0 0 0 transparent,
+    inset 0 0 0 transparent !important;
+  transition:
+    box-shadow var(--hover-dur-fast) var(--hover-ease),
+    color var(--hover-dur-fast) var(--hover-ease),
+    background var(--hover-dur-fast) var(--hover-ease) !important;
 }
 
-.icon-cloud-legend:focus-within button[aria-pressed="true"] {
-  box-shadow: var(--shadow-pressed);
-  color: var(--accent);
+.icon-cloud-legend button:hover,
+.icon-cloud-legend button:focus-visible,
+.icon-cloud-legend:focus-within button:hover,
+.icon-cloud-legend:focus-within button[aria-pressed="true"],
+.icon-cloud-legend button[aria-pressed="true"] {
+  color: var(--accent) !important;
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface)) !important;
+  box-shadow:
+    -1px -1px 5px var(--neu-light),
+    1px 1px 5px var(--neu-dark),
+    inset -2px -2px 5px var(--neu-light),
+    inset 2px 2px 4px var(--neu-dark-strong) !important;
 }
 
 /* ---------- Mobile nav panel ---------- */
 @media (max-width: 640px) {
+  /*
+   * Instagram / in-app browsers park a back chip on the top-right. Keep our
+   * theme + menu controls clear of that chrome via safe-area + reserve.
+   */
+  .nav-wrap {
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+  }
+
+  nav {
+    padding-right: max(0.55rem, calc(env(safe-area-inset-right, 0px) + 2.85rem));
+    gap: 0.55rem;
+  }
+
+  .nav-actions {
+    flex-shrink: 0;
+    margin-right: 0.15rem;
+  }
+
   nav ul {
     background: var(--surface);
     border: 0;
@@ -1543,22 +1826,63 @@ html[data-theme="dark"] .achievement-track .achievement-card h2 {
     border-top: 0;
     box-shadow: inset 0 1px 0 color-mix(in srgb, var(--neu-dark) 30%, transparent);
   }
+
+  .apple-skills-shell,
+  .home-skills,
+  .home-skills-cloud,
+  .skill-detail {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .skill-detail {
+    width: 100%;
+    padding-inline: 0.15rem;
+    box-sizing: border-box;
+  }
+
+  .skill-detail-tldr {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    hyphens: auto;
+  }
 }
 
-/* Soft underline links inside content */
+/* Soft raised links inside content (same press glide as pills) */
 .section a,
 .contact-links a,
 footer a:not(.footer-icon-link):not(.footer-cv-link) {
-  border-bottom: 0;
-  color: var(--accent);
-  box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--accent) 45%, transparent);
+  display: inline-flex;
+  align-items: center;
+  border-bottom: 0 !important;
+  border-radius: 999px !important;
+  padding: 0.35rem 0.85rem;
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  text-decoration: none !important;
+  box-shadow:
+    -5px -5px 10px var(--neu-light),
+    5px 5px 10px var(--neu-dark),
+    inset 0 0 0 transparent,
+    inset 0 0 0 transparent !important;
+  transition:
+    box-shadow var(--hover-dur-fast) var(--hover-ease),
+    color var(--hover-dur-fast) var(--hover-ease),
+    background var(--hover-dur-fast) var(--hover-ease) !important;
 }
 
 .section a:hover,
 .contact-links a:hover,
 footer a:not(.footer-icon-link):not(.footer-cv-link):hover {
-  border-bottom-color: transparent;
-  color: var(--accent-hover);
+  border-bottom-color: transparent !important;
+  color: var(--accent) !important;
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface)) !important;
+  box-shadow:
+    -1px -1px 5px var(--neu-light),
+    1px 1px 5px var(--neu-dark),
+    inset -2px -2px 5px var(--neu-light),
+    inset 2px 2px 4px var(--neu-dark-strong) !important;
 }
 
 /* Kill any leftover tilt transforms from the reveal system */
