@@ -1,7 +1,8 @@
 import Link from "next/link";
-import PageDock from "../components/page-dock";
+import HomeAtmosphere from "../components/home-atmosphere";
 import { ExpandableBlock } from "../components/home-detail-context";
 import IconCloudPanel from "../components/icon-cloud-panel";
+import PageDock from "../components/page-dock";
 import SlidingCta from "../components/sliding-cta";
 import StatsBand from "../components/stats-band";
 import StaggeredWordRotate from "../components/staggered-word-rotate";
@@ -94,6 +95,7 @@ export default function HomePage() {
 
   return (
     <>
+      <HomeAtmosphere />
       {/* AirPods-style product hero: brand, one line, one CTA group */}
       <header className="apple-hero">
         <p className="apple-eyebrow intro-item" data-reveal="top">

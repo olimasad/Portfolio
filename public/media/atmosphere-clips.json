@@ -1,0 +1,48 @@
+{
+  "output": "home-atmosphere.mp4",
+  "poster": "home-atmosphere-poster.jpg",
+  "clipSeconds": 3.4,
+  "width": 1280,
+  "height": 720,
+  "fps": 24,
+  "crf": 29,
+  "comment": "Edit this list, then run: npm run build:atmosphere. Re-record product tours with: npm run record:tours",
+  "clips": [
+    {
+      "id": "miami-twinmotion",
+      "file": "sources/twinmotion-office.mp4",
+      "startSeconds": 0,
+      "note": "Generated from miami-office-new-1"
+    },
+    {
+      "id": "miami-unity",
+      "file": "sources/unity-miami.mp4",
+      "startSeconds": 0,
+      "note": "Generated from miami-office-unity-1"
+    },
+    {
+      "id": "maeve-bloom",
+      "file": "sources/maeve-bloom.mp4",
+      "startSeconds": 0,
+      "note": "Generated cherry-blossom — keep as-is"
+    },
+    {
+      "id": "amethyst-cave",
+      "file": "sources/amethyst-cave.mp4",
+      "startSeconds": 0,
+      "note": "Generated from amethyst-3"
+    },
+    {
+      "id": "beach",
+      "file": "../gallery/beach-2.mp4",
+      "startSeconds": 12,
+      "note": "Your Maeve beach clip — start after the dark intro"
+    },
+    {
+      "id": "montreal-office",
+      "file": "sources/montreal-office.mp4",
+      "startSeconds": 0,
+      "note": "Generated from montreal-office-1 — last clip for now; add your own walkthroughs later"
+    }
+  ]
+}

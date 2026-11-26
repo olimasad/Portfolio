@@ -8,3 +8,6 @@ dist/
 
 .vercel
 .env*
+
+# Atmosphere montage intermediates (final files live in public/media/)
+public/media/raw/

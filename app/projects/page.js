@@ -27,7 +27,7 @@ export default function ProjectsPage() {
         </p>
       </header>
 
-      <div className="page-body apple-home">
+      <div className="page-body apple-home apple-home-wide">
         <PageDock sections={dockSections} currentHref="/projects" />
 
         <ProjectsBoard />

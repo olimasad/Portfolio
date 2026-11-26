@@ -53,9 +53,11 @@ export default function IconCloud({
   const [targetRotation, setTargetRotation] = useState(null);
   const [isVisible, setIsVisible] = useState(true);
 
-  // Front-most icons sit at radius + half an icon from the centre, so this keeps the sphere inside the canvas.
-  const radius = size * 0.33;
-  const iconSize = size * 0.105;
+  // On narrow phones a 0.33 sphere packs icons on top of each other; open the
+  // orbit and shrink glyphs so the cloud stays readable inside the canvas.
+  const compact = size < 340;
+  const radius = size * (compact ? 0.4 : 0.33);
+  const iconSize = size * (compact ? 0.082 : 0.105);
 
   useEffect(() => {
     const wrapper = wrapperRef.current;

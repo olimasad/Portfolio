@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev --port 3000",
     "build": "next build",
+    "build:atmosphere": "node scripts/build-home-atmosphere.mjs",
+    "record:tours": "node scripts/record-product-tours.mjs",
     "optimize:gallery": "node scripts/optimize-gallery.mjs --delete-originals",
     "start": "next start --port 3000"
   },
@@ -31,6 +33,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.2",
     "autoprefixer": "^10.4.27",
+    "playwright": "^1.65.1",
     "postcss": "^8.5.8",
     "sharp": "^0.35.3",
     "tailwindcss": "^4.2.2"

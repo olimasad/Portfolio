@@ -556,7 +556,8 @@ nav ul a {
   color: var(--text-muted);
   text-decoration: none;
   font-size: 0.82rem;
-  font-weight: 500;
+  /* Steady weight so hover/active never reflow the link row */
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   transform: none;
@@ -1549,11 +1550,20 @@ a.bento-row:hover .bento-row-blurb {
   column-gap: clamp(1.2rem, 2.6vw, 2.2rem);
 }
 
+.bento-rows-4 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  column-gap: clamp(0.9rem, 2vw, 1.6rem);
+  row-gap: 0.55rem;
+}
+
 /* Cells of the opening row all sit at the top, so none of them draws a divider. */
 .bento-rows-2 > .bento-row:nth-child(-n + 2),
 .bento-rows-2 > .entry-card:nth-child(-n + 2),
 .bento-rows-3 > .bento-row:nth-child(-n + 3),
-.bento-rows-3 > .entry-card:nth-child(-n + 3) {
+.bento-rows-3 > .entry-card:nth-child(-n + 3),
+.bento-rows-4 > .bento-row:nth-child(-n + 4),
+.bento-rows-4 > .entry-card:nth-child(-n + 4) {
   border-top: 0;
   padding-top: 0.2rem;
 }
@@ -1616,13 +1626,28 @@ a.bento-row:hover .bento-row-blurb {
   color: var(--accent-hover);
 }
 
+@media (max-width: 1280px) {
+  .bento-rows-4 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .bento-rows-4 > .bento-row:nth-child(4),
+  .bento-rows-4 > .entry-card:nth-child(4) {
+    border-top: 1px solid var(--line);
+    padding-top: 0.8rem;
+  }
+}
+
 @media (max-width: 1180px) {
-  .bento-rows-3 {
+  .bento-rows-3,
+  .bento-rows-4 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .bento-rows-3 > .bento-row:nth-child(3),
-  .bento-rows-3 > .entry-card:nth-child(3) {
+  .bento-rows-3 > .entry-card:nth-child(3),
+  .bento-rows-4 > .bento-row:nth-child(3),
+  .bento-rows-4 > .entry-card:nth-child(3) {
     border-top: 1px solid var(--line);
     padding-top: 0.8rem;
   }
@@ -1630,7 +1655,8 @@ a.bento-row:hover .bento-row-blurb {
 
 @media (max-width: 900px) {
   .bento-rows-2,
-  .bento-rows-3 {
+  .bento-rows-3,
+  .bento-rows-4 {
     grid-template-columns: minmax(0, 1fr);
   }
 
@@ -2233,10 +2259,25 @@ a.home-card:hover {
   .home-skills {
     grid-template-columns: minmax(0, 1fr);
     justify-items: center;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .home-skills-cloud {
+    max-width: min(100%, 360px);
   }
 
   .skill-detail {
     text-align: center;
+    width: 100%;
+    max-width: min(100%, 36rem);
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .skill-detail-tldr {
+    margin-inline: auto;
+    max-width: 100%;
   }
 
   .skill-detail-links {

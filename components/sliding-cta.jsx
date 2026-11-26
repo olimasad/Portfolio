@@ -2,12 +2,11 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { cvHref } from "../lib/data";
 
 const ACTIONS = [
   { key: "projects", href: "/projects", label: "View Projects", kind: "link" },
+  { key: "achievements", href: "/achievements", label: "Achievements", kind: "link" },
   { key: "contact", href: "/contact", label: "Get in Touch", kind: "link" },
-  { key: "cv", href: cvHref, label: "Download CV", kind: "download" },
 ];
 
 export default function SlidingCta() {
@@ -102,14 +101,6 @@ export default function SlidingCta() {
         const setRef = (node) => {
           itemRefs.current[index] = node;
         };
-
-        if (action.kind === "download") {
-          return (
-            <a key={action.key} ref={setRef} href={action.href} download {...sharedProps}>
-              {action.label}
-            </a>
-          );
-        }
 
         return (
           <Link key={action.key} ref={setRef} href={action.href} {...sharedProps}>
