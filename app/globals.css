@@ -967,6 +967,14 @@ main {
   margin-top: calc(var(--home-gap, 0rem) * -1);
 }
 
+/* Mid-page strip removed — sentinel only marks where the navbar dock should pin. */
+.dock-anchor-sentinel {
+  margin-top: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
 .dock-outer {
   position: relative;
   display: flex;

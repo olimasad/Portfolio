@@ -1,3 +1,4 @@
+import PageDock from "../../components/page-dock";
 import { cvHref } from "../../lib/data";
 
 export const metadata = {
@@ -42,6 +43,8 @@ export default async function ContactPage({ searchParams }) {
       </header>
 
       <div className="page-body apple-home">
+        <PageDock currentHref="/contact" />
+
         {sent ? (
           <div className="msg-success" role="alert">
             Thanks! Your message has been sent. I&apos;ll get back to you soon.

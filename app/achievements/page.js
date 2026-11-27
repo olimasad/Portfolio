@@ -5,12 +5,6 @@ export const metadata = {
   title: "Achievements - Oliver Massaad",
 };
 
-const dockSections = [
-  { id: "wins", label: "Wins", icon: "competitions" },
-  { id: "experiences", label: "Competitions & Extracurriculars", icon: "list" },
-  { id: "certificates", label: "Certificates", icon: "certificate" },
-];
-
 export default function AchievementsPage() {
   return (
     <>
@@ -27,7 +21,7 @@ export default function AchievementsPage() {
       </header>
 
       <div className="page-body apple-home apple-home-wide">
-        <PageDock sections={dockSections} currentHref="/achievements" />
+        <PageDock currentHref="/achievements" />
 
         <AchievementsBoard />
       </div>

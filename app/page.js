@@ -70,12 +70,6 @@ const competitions = [
   { detailId: "award-dialogue", title: "Dialogue 2026", result: "Track Award", size: "200+ participants" },
 ];
 
-const dockSections = [
-  { id: "about", label: "About Me", icon: "about" },
-  { id: "experience", label: "Experience", icon: "experience" },
-  { id: "skills", label: "Skills", icon: "skills" },
-];
-
 const volunteer = [
   { detailId: "volunteer-shine-the-light", title: "Shine the Light", meta: "Awareness campaign" },
   { detailId: "volunteer-radiostan", title: "Mission Bon Accueil", meta: "Food for dog shelters" },
@@ -117,7 +111,7 @@ export default function HomePage() {
           <StatsBand stats={stats} />
         </section>
 
-        <PageDock sections={dockSections} currentHref="/" />
+        <PageDock currentHref="/" />
 
         {/* Story beat: one headline, one paragraph */}
         <section id="about" className="apple-story" data-reveal="bottom">

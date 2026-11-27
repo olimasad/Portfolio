@@ -6,30 +6,11 @@ import { createPortal } from "react-dom";
 import Dock from "./dock";
 import { DOCK_ICONS } from "./dock-icons";
 
-/** Clears the fixed navbar and leaves a little air above the heading we land on. */
-const SCROLL_OFFSET = 88;
-
-/* A long row does not fit a phone at desktop sizing, so the dock shrinks below this width. */
-const REGULAR = { baseItemSize: 58, magnification: 88, panelHeight: 74, distance: 200 };
-
 /*
- * Compact tiles are sized to whatever the strip is given rather than to a fixed number, so a
- * row that is a few pixels too wide shrinks to fit instead of dropping its last tile onto a
- * second line. The ceiling is the size the strip used to run at, and the floor is the point
- * where a tile stops being comfortable to tap: rows too long to reach it (the homepage carries
- * ten) stay at full size and wrap, which reads better than a line of unhittable specks.
+ * Mid-page icon strip retired — the dock only parks in the navbar after you scroll
+ * past a zero-height sentinel. Text nav links + sliding pod stay untouched until then.
  */
-const COMPACT_MAX = 44;
-const COMPACT_MIN = 34;
 
-function compactSizing(baseItemSize) {
-  return {
-    baseItemSize,
-    magnification: Math.round(baseItemSize * 1.4),
-    panelHeight: baseItemSize + 14,
-    distance: 130,
-  };
-}
 /* Parked in the navbar: dockHeight caps the reserved headroom so it fits the 62px bar. */
 const PINNED = {
   baseItemSize: 34,
@@ -60,8 +41,7 @@ const EXIT_MS = 260;
 
 /*
  * The parked row stands in for the navbar links, so it always carries exactly those four
- * in navbar order. Inline it carries the page's own sections plus the siblings you can
- * actually travel to, which is this list minus wherever you already are.
+ * in navbar order.
  */
 const NAV_PAGES = [
   { href: "/", label: "Home", icon: "home" },
@@ -70,10 +50,9 @@ const NAV_PAGES = [
   { href: "/contact", label: "Contact", icon: "contact" },
 ];
 
-export default function PageDock({ sections = [], currentHref = "/" }) {
+export default function PageDock({ currentHref = "/" }) {
   const router = useRouter();
   const anchorRef = useRef(null);
-  const [compact, setCompact] = useState(false);
   const [tight, setTight] = useState(false);
   const [canPin, setCanPin] = useState(false);
   const [pinned, setPinned] = useState(false);
@@ -83,25 +62,17 @@ export default function PageDock({ sections = [], currentHref = "/" }) {
   // Mirrors `pinned` for the scroll handler, which needs the current value without
   // re-subscribing its listeners on every change.
   const pinnedRef = useRef(false);
-  const [reservedHeight, setReservedHeight] = useState(null);
   const [slot, setSlot] = useState(null);
-  // Null until measured, and again whenever the row cannot be squeezed onto one line.
-  const [fittedSize, setFittedSize] = useState(null);
 
   useEffect(() => {
     setSlot(document.getElementById("nav-dock-slot"));
   }, []);
 
   useEffect(() => {
-    const queries = [
-      window.matchMedia("(max-width: 860px)"),
-      window.matchMedia(TIGHT_QUERY),
-      window.matchMedia(PIN_QUERY),
-    ];
+    const queries = [window.matchMedia(TIGHT_QUERY), window.matchMedia(PIN_QUERY)];
     const sync = () => {
-      setCompact(queries[0].matches);
-      setTight(queries[1].matches);
-      setCanPin(queries[2].matches);
+      setTight(queries[0].matches);
+      setCanPin(queries[1].matches);
     };
 
     sync();
@@ -109,17 +80,9 @@ export default function PageDock({ sections = [], currentHref = "/" }) {
     return () => queries.forEach((query) => query.removeEventListener("change", sync));
   }, []);
 
-  // Remember the inline footprint so the page does not jump when the dock leaves it.
-  useEffect(() => {
-    if (pinned || !anchorRef.current) return;
-    setReservedHeight(anchorRef.current.offsetHeight);
-  }, [pinned, compact, fittedSize]);
-
   /*
-   * Hand the dock to the navbar only after its own strip has scrolled up behind the bar.
-   * This is a direct scroll-position test on purpose: an IntersectionObserver reports a
-   * zeroed rect for its first callback in some states, which reads as "already above the
-   * navbar" and pins the dock while the page is still at the top.
+   * Hand the dock to the navbar only after the sentinel has scrolled up behind the bar.
+   * Same scroll-position test as before — IntersectionObserver can false-pin at the top.
    */
   useEffect(() => {
     if (!canPin) {
@@ -135,8 +98,6 @@ export default function PageDock({ sections = [], currentHref = "/" }) {
       parseInt(getComputedStyle(document.documentElement).getPropertyValue("--nav-height"), 10) || 62;
 
     let frame = 0;
-    // Measuring the anchor on every scroll frame forced a layout mid-scroll. The anchor
-    // holds its footprint while pinned, so its offset only moves when the page reflows.
     let threshold = 0;
 
     function apply(next) {
@@ -152,16 +113,11 @@ export default function PageDock({ sections = [], currentHref = "/" }) {
     function evaluate() {
       frame = 0;
 
-      // A non-positive threshold means the strip was measured before layout settled.
-      // Treating that as "scrolled past" is what parks the dock in the navbar at the top
-      // of the page, so require a real, positive threshold before pinning at all.
       if (threshold <= 0) {
         apply(false);
         return;
       }
 
-      // Release needs a little scrolling back, so resting on the boundary cannot flicker
-      // the row between the two placements while the handover is still animating.
       apply(pinnedRef.current ? window.scrollY > threshold - RELEASE_SLACK : window.scrollY > threshold);
     }
 
@@ -180,8 +136,6 @@ export default function PageDock({ sections = [], currentHref = "/" }) {
     window.addEventListener("scroll", schedule, { passive: true });
     window.addEventListener("resize", scheduleRemeasure);
 
-    // Fonts, images and route content settling all shift the anchor, and each of those
-    // changes the page height, so this refreshes the cached offset without touching scroll.
     let bodyObserver;
     if (typeof ResizeObserver !== "undefined") {
       bodyObserver = new ResizeObserver(scheduleRemeasure);
@@ -212,12 +166,6 @@ export default function PageDock({ sections = [], currentHref = "/" }) {
     window.scrollTo({ top, behavior: reduceMotion ? "auto" : "smooth" });
   }
 
-  function scrollToSection(id) {
-    const target = document.getElementById(id);
-    if (!target) return;
-    smoothScrollTo(target.getBoundingClientRect().top + window.scrollY - SCROLL_OFFSET);
-  }
-
   const parkedItems = NAV_PAGES.map((page) => ({
     label: page.label,
     icon: DOCK_ICONS[page.icon],
@@ -227,70 +175,10 @@ export default function PageDock({ sections = [], currentHref = "/" }) {
     onClick: page.href === currentHref ? () => smoothScrollTo(0) : () => router.push(page.href),
   }));
 
-  const inlineItems = [
-    ...sections.map((section) => ({
-      label: section.label,
-      icon: DOCK_ICONS[section.icon],
-      onClick: () => scrollToSection(section.id),
-    })),
-    ...NAV_PAGES.filter((page) => page.href !== currentHref).map((page) => ({
-      label: page.label,
-      icon: DOCK_ICONS[page.icon],
-      className: "dock-item-route",
-      onClick: () => router.push(page.href),
-    })),
-  ];
-
-  /*
-   * Work out the largest tile that still leaves the whole row on one line. The panel's own
-   * padding, borders and gap are read back from the stylesheet rather than repeated here, so
-   * the two cannot drift apart. The anchor is measured instead of the panel because the panel
-   * is only as wide as its contents, which is the very thing being sized.
-   */
-  useEffect(() => {
-    const anchor = anchorRef.current;
-    if (!compact || !anchor || typeof ResizeObserver === "undefined") {
-      setFittedSize(null);
-      return undefined;
-    }
-
-    function measure() {
-      const panel = anchor.querySelector(".dock-panel");
-      if (!panel) return;
-
-      const styles = window.getComputedStyle(panel);
-      const frame =
-        parseFloat(styles.paddingLeft) +
-        parseFloat(styles.paddingRight) +
-        parseFloat(styles.borderLeftWidth) +
-        parseFloat(styles.borderRightWidth);
-      const gap = parseFloat(styles.columnGap) || 0;
-      const room = anchor.clientWidth - frame - gap * (inlineItems.length - 1);
-      const perItem = Math.floor(room / inlineItems.length);
-
-      setFittedSize(perItem >= COMPACT_MIN ? Math.min(perItem, COMPACT_MAX) : null);
-    }
-
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(anchor);
-    return () => observer.disconnect();
-  }, [compact, inlineItems.length, pinned]);
-
   return (
     <>
-      <div
-        className="dock-anchor"
-        ref={anchorRef}
-        style={pinned && reservedHeight ? { height: reservedHeight } : undefined}
-      >
-        {pinned ? null : (
-          <Dock
-            items={inlineItems}
-            {...(compact ? compactSizing(fittedSize ?? COMPACT_MAX) : REGULAR)}
-          />
-        )}
-      </div>
+      {/* Invisible sentinel — pin threshold only; no mid-page icon strip */}
+      <div className="dock-anchor dock-anchor-sentinel" ref={anchorRef} aria-hidden="true" />
       {parked && slot
         ? createPortal(
             <Dock

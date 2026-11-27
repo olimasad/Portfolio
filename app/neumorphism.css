@@ -853,8 +853,39 @@ main:has(.apple-hero) .apple-home.apple-home-wide {
 }
 
 @media (max-width: 860px) {
-  .apple-hero {
-    min-height: min(78vh, 760px);
+  /*
+   * Home hero was centering in ~78vh, so the name sat mid-phone with a dead band
+   * under the nav. Start content higher without collapsing the first fold.
+   */
+  .apple-hero:not(.apple-hero-page) {
+    min-height: min(70dvh, 640px);
+    justify-content: flex-start;
+    padding: 1.35rem 1rem 2rem;
+  }
+
+  /*
+   * Inner pages were locking ~42vh and vertically centering the title, which left a
+   * huge empty band under the nav on phones. Drop the min-height and pack the hero.
+   */
+  .apple-hero-page {
+    min-height: 0;
+    justify-content: flex-start;
+    padding: 1.1rem 1rem 1.6rem;
+  }
+
+  .apple-hero-page .apple-hero-title {
+    font-size: clamp(2.55rem, 11vw, 4.25rem);
+  }
+
+  .apple-hero-page .apple-hero-sub {
+    margin-top: 0.85rem;
+    width: auto;
+    max-width: 34rem;
+    font-size: clamp(1rem, 3.6vw, 1.2rem);
+  }
+
+  .apple-hero-page .apple-eyebrow {
+    margin-bottom: 0.75rem;
   }
 
   .apple-compare,
@@ -1798,6 +1829,41 @@ html[data-theme="dark"] .achievement-track .achievement-card h2 {
   nav {
     padding-right: max(0.55rem, calc(env(safe-area-inset-right, 0px) + 2.85rem));
     gap: 0.55rem;
+  }
+
+  .apple-hero:not(.apple-hero-page) {
+    min-height: min(66dvh, 580px);
+    padding: 0.85rem 0.85rem 1.6rem;
+  }
+
+  .apple-hero:not(.apple-hero-page) .apple-eyebrow {
+    margin-bottom: 0.7rem;
+  }
+
+  .apple-hero:not(.apple-hero-page) .apple-hero-sub {
+    margin-top: 0.95rem;
+  }
+
+  .apple-hero:not(.apple-hero-page) .apple-cta-row {
+    margin-top: 1.45rem;
+  }
+
+  /* Inner-page heroes must not waste the first fold. */
+  .apple-hero-page {
+    padding: 0.65rem 0.85rem 1.25rem;
+  }
+
+  main:has(.apple-hero) {
+    padding-top: calc(var(--nav-height) + 0.25rem);
+  }
+
+  main:has(.apple-hero-page) {
+    padding-top: calc(var(--nav-height) + 0.35rem);
+  }
+
+  .page-body.apple-home,
+  .page-body.apple-home-wide {
+    --home-gap: clamp(2rem, 5vh, 3.25rem);
   }
 
   .nav-actions {

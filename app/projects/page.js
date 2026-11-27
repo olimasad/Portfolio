@@ -1,16 +1,9 @@
 import PageDock from "../../components/page-dock";
 import ProjectsBoard from "../../components/projects-board";
-import { projectGroups } from "../../lib/data";
 
 export const metadata = {
   title: "Projects - Oliver Massaad",
 };
-
-const dockSections = projectGroups.map((group) => ({
-  id: group.id,
-  label: group.label,
-  icon: group.icon,
-}));
 
 export default function ProjectsPage() {
   return (
@@ -28,7 +21,7 @@ export default function ProjectsPage() {
       </header>
 
       <div className="page-body apple-home apple-home-wide">
-        <PageDock sections={dockSections} currentHref="/projects" />
+        <PageDock currentHref="/projects" />
 
         <ProjectsBoard />
       </div>
