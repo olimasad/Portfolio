@@ -132,19 +132,6 @@ export default function SiteFrame({ children }) {
                       />
                     </svg>
                   </a>
-                  <a
-                    className="footer-icon-link"
-                    href="https://www.instagram.com/oliver_massaad/"
-                    target="_blank"
-                    rel="noopener"
-                    aria-label="Instagram"
-                  >
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                      <rect x="3.5" y="3.5" width="17" height="17" rx="5" fill="none" stroke="currentColor" strokeWidth="1.8" />
-                      <circle cx="12" cy="12" r="3.8" fill="none" stroke="currentColor" strokeWidth="1.8" />
-                      <circle cx="17.3" cy="6.7" r="1.1" fill="currentColor" />
-                    </svg>
-                  </a>
                   <Link className="footer-icon-link" href="/contact" aria-label="Email">
                     <svg viewBox="0 0 24 24" aria-hidden="true">
                       <path d="M4 6h16v12H4z" fill="none" stroke="currentColor" strokeWidth="1.8" />
@@ -194,19 +181,6 @@ export default function SiteFrame({ children }) {
                 d="M4 3.5a2.25 2.25 0 1 0 0 4.5A2.25 2.25 0 0 0 4 3.5zM2 9h4v13H2zM9 9h3.8v1.8h.1c.53-1 1.84-2.1 3.79-2.1 4.05 0 4.8 2.67 4.8 6.14V22h-4v-6.2c0-1.48-.03-3.37-2.05-3.37-2.06 0-2.38 1.6-2.38 3.27V22H9z"
                 fill="currentColor"
               />
-            </svg>
-          </a>
-          <a
-            className="footer-icon-link"
-            href="https://www.instagram.com/oliver_massaad/"
-            target="_blank"
-            rel="noopener"
-            aria-label="Instagram"
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <rect x="3.5" y="3.5" width="17" height="17" rx="5" fill="none" stroke="currentColor" strokeWidth="1.8" />
-              <circle cx="12" cy="12" r="3.8" fill="none" stroke="currentColor" strokeWidth="1.8" />
-              <circle cx="17.3" cy="6.7" r="1.1" fill="currentColor" />
             </svg>
           </a>
           <Link className="footer-icon-link" href="/contact" aria-label="Contact">

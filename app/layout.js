@@ -1,5 +1,6 @@
 import Script from "next/script";
 import { Manrope } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import "./neumorphism.css";
@@ -51,6 +52,7 @@ export default function RootLayout({ children }) {
       <body className={`${softSans.variable} ${softSans.className}`}>
         <SiteFrame>{children}</SiteFrame>
         <Script src="/script.js" strategy="afterInteractive" />
+        <Analytics />
         <SpeedInsights />
       </body>
     </html>

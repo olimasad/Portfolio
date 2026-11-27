@@ -10,20 +10,13 @@ const errorMessages = {
 };
 
 const channels = [
-  { label: "Email", value: "olimasad@gmail.com", href: "mailto:olimasad@gmail.com" },
-  { label: "Phone", value: "+1 418-262-8434", href: "tel:+14182628434" },
+  { label: "Email", value: "nebula@oliverms.com", href: "mailto:nebula@oliverms.com" },
   { label: "CV", value: "PDF", href: cvHref, download: true },
   { label: "GitHub", value: "olimasad", href: "https://github.com/olimasad", external: true },
   {
     label: "LinkedIn",
     value: "oliver-massaad",
     href: "https://www.linkedin.com/in/oliver-massaad-9765a0276/",
-    external: true,
-  },
-  {
-    label: "Instagram",
-    value: "oliver_massaad",
-    href: "https://www.instagram.com/oliver_massaad/",
     external: true,
   },
 ];
@@ -59,7 +52,7 @@ export default async function ContactPage({ searchParams }) {
             {errorMessage ?? (
               <>
                 Message could not be sent right now. Please email me directly at{" "}
-                <a href="mailto:olimasad@gmail.com">olimasad@gmail.com</a>.
+                <a href="mailto:nebula@oliverms.com">nebula@oliverms.com</a>.
               </>
             )}
           </div>
@@ -72,8 +65,8 @@ export default async function ContactPage({ searchParams }) {
               Internships, freelance builds, hackathon teams, or just a question about something on
               this site. The fastest way to reach me is email.
             </p>
-            <a className="contact-mail" href="mailto:olimasad@gmail.com">
-              olimasad@gmail.com
+            <a className="contact-mail" href="mailto:nebula@oliverms.com">
+              nebula@oliverms.com
             </a>
             <div className="contact-actions">
               <button type="button" className="btn btn-secondary btn-pill" id="emailbutton">
@@ -120,6 +113,15 @@ export default async function ContactPage({ searchParams }) {
           <section className="bento bento-12" data-reveal="bottom">
             <h2 className="bento-title">Send a Message</h2>
             <form className="contact-form" action="/api/contact" method="POST">
+              {/* Honeypot — hidden from people, tempting for bots */}
+              <input
+                type="text"
+                name="website"
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+                style={{ position: "absolute", left: "-10000px", opacity: 0, height: 0, width: 0 }}
+              />
               <div className="contact-fields">
                 <div className="contact-field">
                   <label htmlFor="name">Full name</label>

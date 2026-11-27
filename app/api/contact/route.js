@@ -27,6 +27,71 @@ function buildRedirect(request, params) {
   return NextResponse.redirect(redirectUrl, { status: 303 });
 }
 
+function buildMessageBody(name, email, message) {
+  return (
+    "New message from your portfolio contact form.\n\n" +
+    `Name: ${name}\n` +
+    `Email: ${email}\n\n` +
+    `Message:\n${message}\n`
+  );
+}
+
+async function sendWithResend({ apiKey, fromEmail, contactTo, name, email, message }) {
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: fromEmail,
+      to: [contactTo],
+      reply_to: email,
+      subject: `New portfolio message from ${name.replace(/[\r\n]/g, " ")}`,
+      text: buildMessageBody(name, email, message),
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Resend failed with status ${response.status}`);
+  }
+}
+
+async function sendWithSmtp({
+  smtpHost,
+  smtpPort,
+  smtpUsername,
+  smtpPassword,
+  fromEmail,
+  contactTo,
+  name,
+  email,
+  message,
+}) {
+  const transporter = nodemailer.createTransport({
+    host: smtpHost,
+    port: smtpPort,
+    // Port 465 is implicit TLS; 587/25 start plaintext and upgrade via STARTTLS.
+    secure: process.env.SMTP_SECURE ? process.env.SMTP_SECURE === "true" : smtpPort === 465,
+    auth: {
+      user: smtpUsername,
+      pass: smtpPassword,
+    },
+    // Hosts that block outbound SMTP would otherwise hang until the request times out.
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 20000,
+  });
+
+  await transporter.sendMail({
+    subject: `New portfolio message from ${name.replace(/[\r\n]/g, " ")}`,
+    from: { name: `Portfolio Contact (${name.replace(/[\r\n]/g, " ")})`, address: fromEmail },
+    to: contactTo,
+    replyTo: email.replace(/[\r\n]/g, ""),
+    text: buildMessageBody(name, email, message),
+  });
+}
+
 export async function POST(request) {
   let formData;
   try {
@@ -39,6 +104,12 @@ export async function POST(request) {
   const name = String(formData.get("name") || "").trim();
   const email = String(formData.get("email") || "").trim();
   const message = String(formData.get("message") || "").trim();
+  // Honeypot: bots fill this; humans leave it empty.
+  const website = String(formData.get("website") || "").trim();
+
+  if (website) {
+    return buildRedirect(request, { sent: "1" });
+  }
 
   if (!name || !email || !message) {
     return buildRedirect(request, { sent: "0", error: "missing_fields" });
@@ -52,42 +123,42 @@ export async function POST(request) {
   const smtpPort = Number(process.env.SMTP_PORT || "465");
   const smtpUsername = process.env.SMTP_USERNAME;
   const smtpPassword = process.env.SMTP_PASSWORD;
-  const contactTo = process.env.CONTACT_TO_EMAIL || "olimasad@gmail.com";
-  // Gmail and most providers reject a From address that isn't the authenticated account.
-  const fromEmail = process.env.CONTACT_FROM_EMAIL || smtpUsername;
+  const resendApiKey = process.env.RESEND_API_KEY;
+  const contactTo = process.env.CONTACT_TO_EMAIL || "nebula@oliverms.com";
+  // Prefer Resend on hosts that block SMTP; otherwise use the authenticated SMTP mailbox.
+  const fromEmail =
+    process.env.CONTACT_FROM_EMAIL ||
+    (resendApiKey ? "Portfolio Contact <onboarding@resend.dev>" : null) ||
+    smtpUsername;
 
-  if (!smtpUsername || !smtpPassword) {
-    console.error("[contact] SMTP_USERNAME and/or SMTP_PASSWORD are not set in this environment.");
+  if (!resendApiKey && !(smtpUsername && smtpPassword)) {
+    console.error("[contact] RESEND_API_KEY or SMTP_USERNAME/SMTP_PASSWORD must be set.");
     return buildRedirect(request, { sent: "0", error: "smtp_not_configured" });
   }
 
   try {
-    const transporter = nodemailer.createTransport({
-      host: smtpHost,
-      port: smtpPort,
-      // Port 465 is implicit TLS; 587/25 start plaintext and upgrade via STARTTLS.
-      secure: process.env.SMTP_SECURE ? process.env.SMTP_SECURE === "true" : smtpPort === 465,
-      auth: {
-        user: smtpUsername,
-        pass: smtpPassword,
-      },
-      // Hosts that block outbound SMTP would otherwise hang until the request times out.
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 20000,
-    });
-
-    await transporter.sendMail({
-      subject: `New portfolio message from ${name.replace(/[\r\n]/g, " ")}`,
-      from: { name: `Portfolio Contact (${name.replace(/[\r\n]/g, " ")})`, address: fromEmail },
-      to: contactTo,
-      replyTo: email.replace(/[\r\n]/g, ""),
-      text:
-        "New message from your portfolio contact form.\n\n" +
-        `Name: ${name}\n` +
-        `Email: ${email}\n\n` +
-        `Message:\n${message}\n`,
-    });
+    if (resendApiKey) {
+      await sendWithResend({
+        apiKey: resendApiKey,
+        fromEmail,
+        contactTo,
+        name,
+        email,
+        message,
+      });
+    } else {
+      await sendWithSmtp({
+        smtpHost,
+        smtpPort,
+        smtpUsername,
+        smtpPassword,
+        fromEmail,
+        contactTo,
+        name,
+        email,
+        message,
+      });
+    }
   } catch (error) {
     console.error("[contact] failed to send message:", error);
     return buildRedirect(request, { sent: "0", error: "send_failed" });

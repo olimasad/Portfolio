@@ -20,13 +20,14 @@ npm run start
 
 ## Contact form email setup
 
-The `/api/contact` route sends emails via SMTP.
+The `/api/contact` route sends via Resend when available, otherwise SMTP.
 
 Set these environment variables:
 
+- `RESEND_API_KEY` (preferred on Vercel — outbound SMTP is often blocked)
 - `SMTP_HOST` (default: `smtp.gmail.com`)
 - `SMTP_PORT` (default: `465`)
 - `SMTP_USERNAME` (your Gmail address)
 - `SMTP_PASSWORD` (your Gmail App Password, not your normal password)
-- `CONTACT_TO_EMAIL` (default: `olimasad@gmail.com`)
-- `CONTACT_FROM_EMAIL` (optional, defaults to `SMTP_USERNAME`)
+- `CONTACT_TO_EMAIL` (default: `nebula@oliverms.com`)
+- `CONTACT_FROM_EMAIL` (optional; defaults to Resend onboarding address or `SMTP_USERNAME`)
